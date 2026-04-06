@@ -141,6 +141,12 @@ submissions ──> users (confirmed_by)
 
 ---
 
+### ER Diagram
+
+![ER Diagram](./er-diagram.png)
+
+---
+
 ## 🏗 Architecture
 
 ```
