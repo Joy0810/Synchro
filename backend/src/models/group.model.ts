@@ -96,3 +96,10 @@ export const deleteGroup=async(
 ):Promise<void>=>{
     await pool.query('DELETE FROM groups WHERE id = $1', [id]);
 }
+
+export const updateGroupOwner = async (groupId: string, newOwnerId: string): Promise<void> => {
+  await pool.query(
+    `UPDATE groups SET owner_id = $1 WHERE id = $2`,
+    [newOwnerId, groupId]
+  );
+};
