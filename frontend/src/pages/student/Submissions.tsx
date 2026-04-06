@@ -128,6 +128,35 @@ export const Submissions: React.FC = () => {
                     </div>
                 ) : (
                     <div className="space-y-10">
+                        {/* Progress Bar */}
+                        {!loading && assignments.length > 0 && (
+                            <section className="mb-10">
+                                <div className="bg-[#1a1919] rounded-xl p-6 border border-white/5">
+                                    <div className="flex justify-between items-center mb-3">
+                                        <p className="text-sm font-bold text-zinc-400 uppercase tracking-widest">Group Progress</p>
+                                        <span className="text-sm font-bold text-[#81ecff]">{submissions.length} / {assignments.length} Submitted</span>
+                                    </div>
+                                    <div className="w-full bg-[#262626] rounded-full h-2.5">
+                                        <div
+                                            className="h-2.5 rounded-full transition-all duration-700"
+                                            style={{
+                                                width: `${assignments.length > 0 ? (submissions.length / assignments.length) * 100 : 0}%`,
+                                                background: 'linear-gradient(90deg, #81ecff, #81f3e5)'
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex gap-3 mt-4">
+                                        <span className="px-3 py-1 rounded-full bg-[#81f3e5]/10 text-[#81f3e5] text-[10px] font-bold tracking-widest uppercase border border-[#81f3e5]/20">
+                                            ✓ {submissions.length} Done
+                                        </span>
+                                        <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-400 text-[10px] font-bold tracking-widest uppercase border border-white/5">
+                                            ⏳ {assignments.length - submissions.length} Pending
+                                        </span>
+                                    </div>
+                                </div>
+                            </section>
+                        )}
+
                         {/* Assignments to Submit */}
                         {assignments.length > 0 && (
                             <section>
@@ -198,8 +227,8 @@ export const Submissions: React.FC = () => {
                                             {submissions.map((submission) => (
                                                 <tr key={submission.id} className="hover:bg-white/[0.02] transition-colors">
                                                     <td className="px-8 py-6">
-                                                        <p className="text-white font-medium">{submission.assignment?.title || 'Untitled'}</p>
-                                                        <p className="text-xs text-zinc-500">{submission.assignment?.description || ''}</p>
+                                                        <p className="text-white font-medium">{(submission as any).assignment_title || 'Untitled'}</p>
+                                                        <p className="text-xs text-zinc-500">{(submission as any).assignment_description || ''}</p>
                                                     </td>
                                                     <td className="px-8 py-6 text-zinc-400 text-sm">
                                                         {submission.confirmed_at ? (

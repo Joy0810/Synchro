@@ -31,7 +31,7 @@ export const getSubmissionsByGroup = async (
   group_id: string
 ): Promise<Submission[]> => {
   const { rows } = await pool.query<Submission>(
-    `SELECT s.*, a.title as assignment_title, a.due_date
+    `SELECT s.*, a.title as assignment_title, a.description as assignment_description, a.due_date
      FROM submissions s
      JOIN assignments a ON s.assignment_id = a.id
      WHERE s.group_id = $1
