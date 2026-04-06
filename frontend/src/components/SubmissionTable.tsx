@@ -1,10 +1,13 @@
 import React from 'react';
+import type { Submission } from '../types';
 
 interface SubmissionTableProps {
-  isEmpty: boolean;
+  submissions: Submission[];
 }
 
-export const SubmissionTable: React.FC<SubmissionTableProps> = ({ isEmpty }) => {
+export const SubmissionTable: React.FC<SubmissionTableProps> = ({ submissions }) => {
+  const isEmpty = submissions.length === 0;
+
   return (
     <div className="bg-surface-container-low rounded-xl p-8 border border-outline-variant/10 h-full">
       <div className="flex items-center justify-between mb-8">
@@ -31,16 +34,33 @@ export const SubmissionTable: React.FC<SubmissionTableProps> = ({ isEmpty }) => 
                 </td>
               </tr>
             ) : (
-              <>
-                <tr className="group hover:bg-surface-container/50 transition-colors">
+              submissions.map((submission) => (
+                <tr key={submission.id} className="group hover:bg-surface-container/50 transition-colors">
                   <td className="py-5">
-                    <p className="text-sm font-bold font-headline text-on-surface">QNN_Final_Architecture</p>
+                    <p className="text-sm font-bold font-headline text-on-surface">{submission.assignment?.title || 'Unknown Assignment'}</p>
                   </td>
-                  <td className="py-5 text-sm text-on-surface-variant font-body">Oct 24, 2023 • 14:20</td>
+                  <td className="py-5 text-sm text-on-surface-variant font-body">
+                    {submission.confirmed_at ? new Date(submission.confirmed_at).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    }) + ' • ' + new Date(submission.confirmed_at).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    }) : 'Pending'}
+                  </td>
                   <td className="py-5">
-                    <a className="text-primary hover:text-primary-dim transition-colors" href="#">
-                      <span className="material-symbols-outlined text-[18px]">link</span>
-                    </a>
+                    {submission.submission_link && (
+                      <a 
+                        className="text-primary hover:text-primary-dim transition-colors" 
+                        href={submission.submission_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">link</span>
+                      </a>
+                    )}
                   </td>
                   <td className="py-5 text-right">
                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold font-label uppercase tracking-tighter">
@@ -49,48 +69,16 @@ export const SubmissionTable: React.FC<SubmissionTableProps> = ({ isEmpty }) => 
                     </span>
                   </td>
                 </tr>
-                <tr className="group hover:bg-surface-container/50 transition-colors">
-                  <td className="py-5">
-                    <p className="text-sm font-bold font-headline text-on-surface">Data_Structures_Midterm</p>
-                  </td>
-                  <td className="py-5 text-sm text-on-surface-variant font-body">Oct 12, 2023 • 09:15</td>
-                  <td className="py-5">
-                    <a className="text-primary hover:text-primary-dim transition-colors" href="#">
-                      <span className="material-symbols-outlined text-[18px]">link</span>
-                    </a>
-                  </td>
-                  <td className="py-5 text-right">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold font-label uppercase tracking-tighter">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                      Submitted
-                    </span>
-                  </td>
-                </tr>
-                <tr className="group hover:bg-surface-container/50 transition-colors">
-                  <td className="py-5">
-                    <p className="text-sm font-bold font-headline text-on-surface">Bio_Infra_Case_Study</p>
-                  </td>
-                  <td className="py-5 text-sm text-on-surface-variant font-body">Sep 30, 2023 • 23:58</td>
-                  <td className="py-5">
-                    <a className="text-primary hover:text-primary-dim transition-colors" href="#">
-                      <span className="material-symbols-outlined text-[18px]">link</span>
-                    </a>
-                  </td>
-                  <td className="py-5 text-right">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container/20 text-secondary text-[10px] font-bold font-label uppercase tracking-tighter">
-                      <span className="w-1.5 h-1.5 rounded-full bg-secondary"></span>
-                      Submitted
-                    </span>
-                  </td>
-                </tr>
-              </>
+              ))
             )}
           </tbody>
         </table>
       </div>
-      <div className="mt-8 flex justify-center">
-        <button className="text-xs font-headline text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest font-bold">View Archive</button>
-      </div>
+      {!isEmpty && (
+        <div className="mt-8 flex justify-center">
+          <button className="text-xs font-headline text-on-surface-variant hover:text-primary transition-colors uppercase tracking-widest font-bold">View Archive</button>
+        </div>
+      )}
     </div>
   );
 };

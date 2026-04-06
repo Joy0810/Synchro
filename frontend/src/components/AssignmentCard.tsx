@@ -45,7 +45,10 @@ export const AssignmentCard: React.FC<AssignmentCardProps> = ({ title, status, t
         </h4>
       </div>
       <div className="flex items-center justify-between mt-6">
-        <button className="bg-gradient-to-br from-primary to-primary-dim text-on-primary-fixed px-6 py-2 rounded-full font-bold font-label text-xs tracking-tighter hover:scale-105 active:scale-95 transition-transform">
+        <button
+          onClick={() => window.location.href = '/submissions'}
+          className="bg-gradient-to-br from-primary to-primary-dim text-on-primary-fixed px-6 py-2 rounded-full font-bold font-label text-xs tracking-tighter hover:scale-105 active:scale-95 transition-transform"
+        >
           SUBMIT
         </button>
       </div>

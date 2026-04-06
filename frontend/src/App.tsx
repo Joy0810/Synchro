@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { StudentDashboard } from './pages/StudentDashboard';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
@@ -12,24 +13,74 @@ import { AdminGroups } from './pages/admin/AdminGroups';
 import { AdminSubmissions } from './pages/admin/AdminSubmissions';
 import './index.css';
 
+const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole?: 'student' | 'admin' }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="text-cyan-400 text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRole && user.role !== allowedRole) {
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const AuthRedirect = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+        <div className="text-cyan-400 text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/dashboard'} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/login" replace />} />
+      <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
+      <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
+      
+      {/* Student Routes */}
+      <Route path="/dashboard" element={<ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>} />
+      <Route path="/assignments" element={<ProtectedRoute allowedRole="student"><Assignments /></ProtectedRoute>} />
+      <Route path="/my-group" element={<ProtectedRoute allowedRole="student"><MyGroup /></ProtectedRoute>} />
+      <Route path="/submissions" element={<ProtectedRoute allowedRole="student"><Submissions /></ProtectedRoute>} />
+
+      {/* Admin Routes */}
+      <Route path="/admin/dashboard" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/assignments" element={<ProtectedRoute allowedRole="admin"><AdminAssignments /></ProtectedRoute>} />
+      <Route path="/admin/groups" element={<ProtectedRoute allowedRole="admin"><AdminGroups /></ProtectedRoute>} />
+      <Route path="/admin/submissions" element={<ProtectedRoute allowedRole="admin"><AdminSubmissions /></ProtectedRoute>} />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Navigate to="/login" replace />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<StudentDashboard />} />
-        <Route path="/assignments" element={<Assignments />} />
-        <Route path="/my-group" element={<MyGroup />} />
-        <Route path="/submissions" element={<Submissions />} />
-
-        {/* Admin Routes */}
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/assignments" element={<AdminAssignments />} />
-        <Route path="/admin/groups" element={<AdminGroups />} />
-        <Route path="/admin/submissions" element={<AdminSubmissions />} />
-      </Routes>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </BrowserRouter>
   );
 }

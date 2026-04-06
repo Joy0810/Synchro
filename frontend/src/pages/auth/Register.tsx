@@ -1,12 +1,30 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const Register: React.FC = () => {
   const navigate = useNavigate();
+  const { register } = useAuth();
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'student' | 'admin'>('student');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      await register({ name, email, password, role });
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -29,7 +47,7 @@ export const Register: React.FC = () => {
           <div className="bg-surface-container border border-outline-variant/50 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02)] rounded-xl p-12 relative overflow-hidden">
             {/* Subtle UI Accent */}
             <div className="absolute top-0 right-0 w-32 h-1 bg-primary/20"></div>
-            
+
             <header className="mb-10 text-center">
               {/* FIXED: 'text-on-surface' -> 'text-white' as per prompt instructions */}
               <h1 className="font-headline text-4xl font-bold tracking-tight text-white mb-3">Create your account</h1>
@@ -37,30 +55,49 @@ export const Register: React.FC = () => {
             </header>
 
             <form className="space-y-8" onSubmit={handleRegister}>
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+
               {/* Inputs */}
               <div className="space-y-6">
                 <div className="group">
                   <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors font-bold">Full Name</label>
-                  <input 
-                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all" 
-                    placeholder="Enter your name" 
-                    type="text" 
+                  <input
+                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all"
+                    placeholder="Enter your name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                    disabled={loading}
                   />
                 </div>
                 <div className="group">
                   <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors font-bold">Email Address</label>
-                  <input 
-                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all" 
-                    placeholder="name@university.edu" 
-                    type="email" 
+                  <input
+                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all"
+                    placeholder="name@university.edu"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    disabled={loading}
                   />
                 </div>
                 <div className="group">
                   <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors font-bold">Password</label>
-                  <input 
-                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all" 
-                    placeholder="••••••••" 
-                    type="password" 
+                  <input
+                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all"
+                    placeholder="••••••••"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    disabled={loading}
                   />
                 </div>
               </div>
@@ -69,12 +106,28 @@ export const Register: React.FC = () => {
               <div className="space-y-3">
                 <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant font-bold">I am a</label>
                 <div className="grid grid-cols-2 gap-4">
-                  <button className="flex items-center justify-center gap-3 py-4 px-4 rounded-lg border-2 border-primary text-primary bg-primary/5 font-bold text-sm transition-all" type="button">
-                    <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: "'FILL' 1" }}>school</span>
+                  <button
+                    className={`flex items-center justify-center gap-3 py-4 px-4 rounded-lg border-2 font-bold text-sm transition-all ${role === 'student'
+                      ? 'border-primary text-primary bg-primary/5'
+                      : 'border-outline text-on-surface-variant bg-transparent hover:border-on-surface-variant'
+                      }`}
+                    type="button"
+                    onClick={() => setRole('student')}
+                    disabled={loading}
+                  >
+                    <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: role === 'student' ? "'FILL' 1" : "'FILL' 0" }}>school</span>
                     STUDENT
                   </button>
-                  <button className="flex items-center justify-center gap-3 py-4 px-4 rounded-lg border border-outline hover:border-on-surface-variant text-on-surface-variant bg-transparent font-bold text-sm transition-all" type="button">
-                    <span className="material-symbols-outlined text-base">admin_panel_settings</span>
+                  <button
+                    className={`flex items-center justify-center gap-3 py-4 px-4 rounded-lg border-2 font-bold text-sm transition-all ${role === 'admin'
+                      ? 'border-primary text-primary bg-primary/5'
+                      : 'border-outline text-on-surface-variant bg-transparent hover:border-on-surface-variant'
+                      }`}
+                    type="button"
+                    onClick={() => setRole('admin')}
+                    disabled={loading}
+                  >
+                    <span className="material-symbols-outlined text-base" style={{ fontVariationSettings: role === 'admin' ? "'FILL' 1" : "'FILL' 0" }}>admin_panel_settings</span>
                     ADMIN
                   </button>
                 </div>
@@ -82,11 +135,12 @@ export const Register: React.FC = () => {
 
               {/* Action */}
               <div className="pt-4">
-                <button 
-                  className="w-full bg-primary hover:bg-primary/90 text-on-primary py-5 rounded-lg font-headline font-black text-lg uppercase tracking-widest transition-all hover:shadow-[0_0_20px_rgba(0,188,212,0.2)]" 
+                <button
+                  className="w-full bg-primary hover:bg-primary/90 text-on-primary py-5 rounded-lg font-headline font-black text-lg uppercase tracking-widest transition-all hover:shadow-[0_0_20px_rgba(0,188,212,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
                   type="submit"
+                  disabled={loading}
                 >
-                  Register
+                  {loading ? 'Registering...' : 'Register'}
                 </button>
               </div>
             </form>
@@ -94,7 +148,7 @@ export const Register: React.FC = () => {
             {/* Auth Footer */}
             <div className="mt-10 pt-8 border-t border-outline-variant flex justify-center">
               <p className="font-body text-on-surface-variant">
-                Already have an account? 
+                Already have an account?
                 <Link to="/login" className="text-primary font-bold hover:underline ml-2">Sign In</Link>
               </p>
             </div>

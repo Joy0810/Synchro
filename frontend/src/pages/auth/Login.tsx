@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
 export const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    navigate('/dashboard');
+    setError('');
+    setLoading(true);
+
+    try {
+      await login({ email, password });
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      navigate(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,6 +51,13 @@ export const Login: React.FC = () => {
           </div>
 
           <form className="space-y-8" onSubmit={handleLogin}>
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+                {error}
+              </div>
+            )}
+
             {/* Email Field */}
             <div className="space-y-2">
               <label className="text-[11px] font-label uppercase tracking-[0.2em] text-on-surface-variant font-bold" htmlFor="email">Email Address</label>
@@ -45,7 +69,11 @@ export const Login: React.FC = () => {
                   className="w-full pl-12 pr-4 py-4 text-white font-body rounded-lg bg-[#121212] border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
                   id="email" 
                   placeholder="name@university.edu" 
-                  type="email" 
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -64,17 +92,22 @@ export const Login: React.FC = () => {
                   className="w-full pl-12 pr-4 py-4 text-white font-body rounded-lg bg-[#121212] border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
                   id="password" 
                   placeholder="••••••••" 
-                  type="password" 
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
                 />
               </div>
             </div>
 
             {/* Sign In Button */}
             <button 
-              className="w-full bg-primary text-black font-bold font-headline py-5 rounded-lg hover:brightness-110 active:scale-[0.99] transition-all duration-200 shadow-[0_0_20px_rgba(129,236,255,0.3)] flex items-center justify-center gap-3 text-lg" 
+              className="w-full bg-primary text-black font-bold font-headline py-5 rounded-lg hover:brightness-110 active:scale-[0.99] transition-all duration-200 shadow-[0_0_20px_rgba(129,236,255,0.3)] flex items-center justify-center gap-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed" 
               type="submit"
+              disabled={loading}
             >
-              <span>SIGN IN</span>
+              <span>{loading ? 'SIGNING IN...' : 'SIGN IN'}</span>
               <span className="material-symbols-outlined">arrow_forward</span>
             </button>
           </form>

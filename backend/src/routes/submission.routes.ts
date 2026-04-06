@@ -9,7 +9,7 @@ const router = Router();
 const submitSchema = z.object({
   assignment_id: z.string().uuid(),
   group_id: z.string().uuid(),
-  submission_link: z.string().url(),
+  submission_link: z.string().optional().nullable(),
 });
 
 router.use(verifyToken);
@@ -17,7 +17,7 @@ router.use(verifyToken);
 router.post('/', requireRole('student'), async (req: AuthRequest, res, next) => {
   try {
     const { assignment_id, group_id, submission_link } = submitSchema.parse(req.body);
-    const submission = await submitAssignment(assignment_id, group_id, req.user!.userId, submission_link);
+    const submission = await submitAssignment(assignment_id, group_id, req.user!.userId, submission_link ?? "");
     res.status(201).json({ success: true, data: submission });
   } catch (e) { next(e); }
 });
