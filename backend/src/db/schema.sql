@@ -46,5 +46,6 @@ CREATE TABLE IF NOT EXISTS submissions (
     group_id        UUID            NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
     confirmed_by    UUID            REFERENCES users(id) ON DELETE SET NULL,
     confirmed_at    TIMESTAMPTZ,
+    submission_link VARCHAR(500),
     UNIQUE (assignment_id, group_id)
 );
