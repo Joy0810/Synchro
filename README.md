@@ -212,6 +212,9 @@ synchro/
 
 Register via `/register` with role `student` or `admin`.
 
+## 🎥 Demo Video
+[Watch Demo](https://www.loom.com/share/545abd3bc6af415ca46f2f0c8458f6f4)
+
 ---
 
 <div align="center">
