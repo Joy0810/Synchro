@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { errorHandler } from "./middleware/error.middleware";
 import authRoutes from "./routes/auth.routes";
 import groupRoutes from "./routes/group.routes";
+import assignmentRotues from "./routes/assignment.routes";
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.get("/health",(req,res)=>{
 
 app.use("/api/auth",authRoutes);
 app.use("/api/groups",groupRoutes);
+app.use("/api/assignments",assignmentRotues);
 
 app.use(errorHandler);
 
