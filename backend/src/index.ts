@@ -6,6 +6,7 @@ import authRoutes from "./routes/auth.routes";
 import groupRoutes from "./routes/group.routes";
 import assignmentRotues from "./routes/assignment.routes";
 import submissionRoutes from "./routes/submission.routes";
+import analyticsRoutes from './routes/analytics.routes';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use("/api/auth",authRoutes);
 app.use("/api/groups",groupRoutes);
 app.use("/api/assignments",assignmentRotues);
 app.use("/api/submissions",submissionRoutes);
+app.use("/api/analytics",analyticsRoutes);
 
 app.use(errorHandler);
 
