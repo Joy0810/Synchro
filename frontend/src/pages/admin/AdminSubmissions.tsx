@@ -97,9 +97,9 @@ export const AdminSubmissions: React.FC = () => {
                                         <tbody className="divide-y divide-[#484847]/10">
                                             {submissions.map((submission) => (
                                                 <tr key={submission.id} className="hover:bg-white/5 transition-colors group">
-                                                    <td className="px-8 py-5 font-medium">{submission.assignment?.title || 'N/A'}</td>
-                                                    <td className="px-8 py-5 text-[#adaaaa]">{submission.group?.name || 'N/A'}</td>
-                                                    <td className="px-8 py-5 text-[#81ecff]">{submission.confirmed_by_user?.name || 'N/A'}</td>
+                                                    <td className="px-8 py-5 font-medium">{(submission as any).assignment_title || 'N/A'}</td>
+                                                    <td className="px-8 py-5 text-[#adaaaa]">{(submission as any).group_name || 'N/A'}</td>
+                                                    <td className="px-8 py-5 text-[#81ecff]">{(submission as any).confirmed_by_name || 'N/A'}</td>
                                                     <td className="px-8 py-5">
                                                         {submission.confirmed_at ? (
                                                             <div className="flex flex-col">
