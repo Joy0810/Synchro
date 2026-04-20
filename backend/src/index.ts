@@ -7,8 +7,10 @@ import groupRoutes from "./routes/group.routes";
 import assignmentRotues from "./routes/assignment.routes";
 import submissionRoutes from "./routes/submission.routes";
 import analyticsRoutes from './routes/analytics.routes';
+import connectDB from "./config/db";
 
 dotenv.config();
+connectDB();
 
 const app=express();
 const PORT=process.env.PORT || 4000;
