@@ -7,6 +7,7 @@ export const AdminSubmissions: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
+    const [courses, setCourses] = useState<any[]>([]);
 
     useEffect(() => {
         fetchSubmissions();
@@ -16,14 +17,23 @@ export const AdminSubmissions: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const response = await axiosInstance.get('/api/submissions/admin');
-            setSubmissions(response.data.data);
+            const [submissionsRes, coursesRes] = await Promise.all([
+                axiosInstance.get('/api/submissions/admin'),
+                axiosInstance.get('/api/courses')
+            ]);
+            setSubmissions(submissionsRes.data.data);
+            setCourses(coursesRes.data.data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to load submissions');
             console.error('Submissions error:', err);
         } finally {
             setLoading(false);
         }
+    };
+
+    const getCourseTitle = (courseId: string) => {
+        const course = courses.find(c => c._id === courseId);
+        return course?.title || null;
     };
 
     const formatDate = (dateStr: string) => {
@@ -88,6 +98,7 @@ export const AdminSubmissions: React.FC = () => {
                                         <thead>
                                             <tr className="bg-[#201f1f]/30">
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Assignment Title</th>
+                                                <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Course</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Group Name</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Confirmed By</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Confirmed At</th>
@@ -96,15 +107,24 @@ export const AdminSubmissions: React.FC = () => {
                                         </thead>
                                         <tbody className="divide-y divide-[#484847]/10">
                                             {submissions.map((submission) => (
-                                                <tr key={submission.id} className="hover:bg-white/5 transition-colors group">
-                                                    <td className="px-8 py-5 font-medium">{(submission as any).assignment_title || 'N/A'}</td>
-                                                    <td className="px-8 py-5 text-[#adaaaa]">{(submission as any).group_name || 'N/A'}</td>
-                                                    <td className="px-8 py-5 text-[#81ecff]">{(submission as any).confirmed_by_name || 'N/A'}</td>
+                                                <tr key={submission._id} className="hover:bg-white/5 transition-colors group">
+                                                    <td className="px-8 py-5 font-medium">{submission.assignment?.title || 'N/A'}</td>
                                                     <td className="px-8 py-5">
-                                                        {submission.confirmedAt ? (
+                                                        {(() => {
+                                                            const courseId = (submission.assignment as any)?.course;
+                                                            const title = typeof courseId === 'object' ? courseId?.title : (courseId ? getCourseTitle(courseId) : null);
+                                                            return title
+                                                                ? <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider">{title}</span>
+                                                                : <span className="text-zinc-600 text-xs">—</span>;
+                                                        })()}
+                                                    </td>
+                                                    <td className="px-8 py-5 text-[#adaaaa]">{submission.group?.name || 'N/A'}</td>
+                                                    <td className="px-8 py-5 text-[#81ecff]">{(submission as any).confirmedBy?.name || 'N/A'}</td>
+                                                    <td className="px-8 py-5">
+                                                        {(submission as any).confirmedAt ? (
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm">{formatDate(submission.confirmedAt)}</span>
-                                                                <span className="text-xs text-[#adaaaa]">{formatTime(submission.confirmedAt)}</span>
+                                                                <span className="text-sm">{formatDate((submission as any).confirmedAt)}</span>
+                                                                <span className="text-xs text-[#adaaaa]">{formatTime((submission as any).confirmedAt)}</span>
                                                             </div>
                                                         ) : (
                                                             <span className="text-[#adaaaa]">N/A</span>

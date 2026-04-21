@@ -229,6 +229,7 @@ export const Submissions: React.FC = () => {
                                         <thead className="bg-[#201f1f]/30 border-b border-white/5">
                                             <tr>
                                                 <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Assignment</th>
+                                                <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Course</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Submitted Date</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Submission Link</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Status</th>
@@ -240,6 +241,11 @@ export const Submissions: React.FC = () => {
                                                     <td className="px-8 py-6">
                                                         <p className="text-white font-medium">{(submission.assignment as any)?.title || 'Untitled'}</p>
                                                         <p className="text-xs text-zinc-500">{(submission.assignment as any)?.description || ''}</p>
+                                                    </td>
+                                                    <td className="px-8 py-6 text-sm text-zinc-400">
+                                                        {(submission.assignment as any)?.course?.title
+                                                            ? <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider">{(submission.assignment as any).course.title}</span>
+                                                            : <span className="text-zinc-600">—</span>}
                                                     </td>
                                                     <td className="px-8 py-6 text-zinc-400 text-sm">
                                                         {submission.confirmedAt ? (

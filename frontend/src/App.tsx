@@ -11,6 +11,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminAssignments } from './pages/admin/AdminAssignments';
 import { AdminGroups } from './pages/admin/AdminGroups';
 import { AdminSubmissions } from './pages/admin/AdminSubmissions';
+import { AdminCourses } from './pages/admin/AdminCourses';
 import './index.css';
 
 const ProtectedRoute = ({ children, allowedRole }: { children: React.ReactNode; allowedRole?: 'student' | 'admin' }) => {
@@ -73,6 +74,7 @@ function AppRoutes() {
       <Route path="/admin/assignments" element={<ProtectedRoute allowedRole="admin"><AdminAssignments /></ProtectedRoute>} />
       <Route path="/admin/groups" element={<ProtectedRoute allowedRole="admin"><AdminGroups /></ProtectedRoute>} />
       <Route path="/admin/submissions" element={<ProtectedRoute allowedRole="admin"><AdminSubmissions /></ProtectedRoute>} />
+      <Route path="/admin/courses" element={<ProtectedRoute allowedRole="admin"><AdminCourses /></ProtectedRoute>} />
     </Routes>
   );
 }

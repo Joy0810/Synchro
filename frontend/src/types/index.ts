@@ -72,6 +72,7 @@ export interface AnalyticsOverview {
   total_assignments: number;
   submitted_count: number;
   pending_count: number;
+  total_courses?: number;
 }
 
 export interface GroupAnalytics {

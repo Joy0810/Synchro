@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { AdminNavbar } from '../../components/AdminNavbar';
 import axiosInstance from '../../api/axios';
-import type { AnalyticsOverview, GroupAnalytics } from '../../types';
+import type { AnalyticsOverview } from '../../types';
 
 export const AdminDashboard: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
-    const [groupAnalytics, setGroupAnalytics] = useState<GroupAnalytics[]>([]);
 
     useEffect(() => {
         fetchDashboardData();
@@ -18,13 +17,8 @@ export const AdminDashboard: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            const [overviewRes, groupsRes] = await Promise.all([
-                axiosInstance.get('/api/analytics/overview'),
-                axiosInstance.get('/api/analytics/groups')
-            ]);
-
+            const overviewRes = await axiosInstance.get('/api/analytics/overview');
             setOverview(overviewRes.data.data);
-            setGroupAnalytics(groupsRes.data.data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to load dashboard data');
             console.error('Dashboard error:', err);
@@ -58,7 +52,7 @@ export const AdminDashboard: React.FC = () => {
                 ) : (
                     <>
                         {/* Bento Stats Grid */}
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-12">
                             <div className="p-6 rounded-xl bg-[#1a1919] hover:bg-[#201f1f] transition-all group border border-[#484847]/5">
                                 <div className="flex justify-between items-start mb-4">
                                     <div className="p-2 bg-[#81ecff]/10 rounded-lg text-[#81ecff]">
@@ -122,62 +116,24 @@ export const AdminDashboard: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                        </div>
 
-                        {/* Main Content Area */}
-                        <div className="grid grid-cols-12 gap-8 items-start">
-                            <section className="col-span-12 lg:col-span-8 bg-[#131313] rounded-xl overflow-hidden border border-[#484847]/5">
-                                <div className="p-8 flex justify-between items-center border-b border-[#484847]/10">
-                                    <div>
-                                        <h2 className="text-xl font-headline font-bold text-white">Group Performance</h2>
-                                        <p className="text-sm text-[#adaaaa] mt-1">Academic track metrics for current semester</p>
+                            <div className="p-6 rounded-xl bg-[#1a1919] hover:bg-[#201f1f] transition-all group border border-[#484847]/5">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-2 bg-[#a78bfa]/10 rounded-lg text-[#a78bfa]">
+                                        <span className="material-symbols-outlined">menu_book</span>
                                     </div>
                                 </div>
-
-                                {isEmpty ? (
-                                    <div className="relative min-h-[400px] flex flex-col items-center justify-center p-12 text-center">
-                                        <div className="absolute inset-0 opacity-5 pointer-events-none overflow-hidden">
-                                            <svg height="100%" viewBox="0 0 400 400" width="100%">
-                                                <circle cx="200" cy="200" fill="none" r="150" stroke="#81ecff" strokeDasharray="10 5" strokeWidth="1"></circle>
-                                                <rect fill="none" height="200" stroke="#81ecff" strokeWidth="0.5" width="200" x="100" y="100"></rect>
-                                            </svg>
-                                        </div>
-                                        <div className="relative z-10">
-                                            <div className="w-24 h-24 bg-[#262626] rounded-full flex items-center justify-center mb-6 mx-auto border border-[#484847]/20">
-                                                <span className="material-symbols-outlined text-4xl text-[#adaaaa]/30">group_off</span>
-                                            </div>
-                                            <h3 className="text-2xl font-headline font-bold mb-2">No groups yet</h3>
-                                            <p className="text-[#adaaaa] max-w-sm mx-auto">Establish your first course and assign students to collaborative groups to begin tracking metrics.</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-left border-collapse">
-                                            <thead>
-                                                <tr className="bg-[#201f1f]/30">
-                                                    <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest">Group Name</th>
-                                                    <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-center">Submitted</th>
-                                                    <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-center">Total</th>
-                                                    <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-center">Pending</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-[#484847]/10">
-                                                {groupAnalytics.map((group) => (
-                                                    <tr key={group.id} className="hover:bg-white/5 transition-colors">
-                                                        <td className="px-8 py-5 font-medium">{group.name}</td>
-                                                        <td className="px-8 py-5 text-center font-mono">{group.submitted_count}</td>
-                                                        <td className="px-8 py-5 text-center font-mono text-[#adaaaa]">{group.total_assignments}</td>
-                                                        <td className={`px-8 py-5 text-center font-mono ${group.pending_count === 0 ? 'text-[#81f3e5]' : 'text-[#ff716c]'}`}>
-                                                            {group.pending_count}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                <p className="text-[#adaaaa] text-sm font-medium mb-1">Total Courses</p>
+                                <h3 className="text-3xl font-headline font-bold">{overview?.total_courses || 0}</h3>
+                                {isEmpty && (
+                                    <div className="text-xs text-[#adaaaa]/60 flex items-center gap-1 mt-2">
+                                        <span className="material-symbols-outlined text-xs">trending_flat</span>
+                                        Courses pending
                                     </div>
                                 )}
-                            </section>
+                            </div>
                         </div>
+
                     </>
                 )}
             </main>

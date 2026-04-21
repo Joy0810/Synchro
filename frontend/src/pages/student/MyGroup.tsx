@@ -16,6 +16,7 @@ export const MyGroup: React.FC = () => {
     const [assignments, setAssignments] = useState<any[]>([]);
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [submissions, setSubmissions] = useState<any[]>([]);
 
     const selectedGroup = groups.length > 0 ? groups[0] : null;
 
@@ -33,6 +34,11 @@ export const MyGroup: React.FC = () => {
             ]);
             setGroups(groupsRes.data.data);
             setAssignments(assignmentsRes.data.data);
+
+            if (groupsRes.data.data.length > 0) {
+                const subsRes = await axiosInstance.get(`/api/submissions/group/${groupsRes.data.data[0]._id}`);
+                setSubmissions(subsRes.data.data);
+            }
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to fetch data');
             console.error('Error fetching data:', err);
@@ -116,6 +122,11 @@ export const MyGroup: React.FC = () => {
             setActionLoading(false);
         }
     };
+
+    const isSubmitted = (assignmentId: string) => submissions.some(s => {
+        const id = typeof s.assignment === 'object' ? s.assignment?._id : s.assignmentId;
+        return id === assignmentId;
+    });
 
     const isOwner = selectedGroup && (selectedGroup.owner._id === user?.id || selectedGroup.owner._id === user?._id);
 
@@ -335,13 +346,13 @@ export const MyGroup: React.FC = () => {
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-6">
-                                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isPast
+                                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isSubmitted(assignment._id)
                                                                     ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/20'
                                                                     : isUrgent
                                                                         ? 'bg-[#f94d4e]/20 text-[#ff716c] border-[#ff716c]/20'
                                                                         : 'bg-[#006a62]/30 text-[#81f3e5] border-[#81f3e5]/20'
                                                                     }`}>
-                                                                    {isPast ? 'Completed' : isUrgent ? 'Urgent' : 'In-Progress'}
+                                                                    {isSubmitted(assignment._id) ? 'Submitted' : isUrgent ? 'Urgent' : 'In-Progress'}
                                                                 </span>
                                                             </td>
                                                             <td className="px-8 py-6 text-right">
@@ -349,7 +360,9 @@ export const MyGroup: React.FC = () => {
                                                                     className="text-primary hover:text-white transition-colors"
                                                                     onClick={() => window.location.href = '/submissions'}
                                                                 >
-                                                                    <span className="material-symbols-outlined">{isPast ? 'check_circle' : 'arrow_forward'}</span>
+                                                                    <span className={`material-symbols-outlined ${isSubmitted(assignment._id) ? 'text-emerald-400' : ''}`}>
+                                                                        {isSubmitted(assignment._id) ? 'check_circle' : 'arrow_forward'}
+                                                                    </span>
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -472,18 +485,6 @@ export const MyGroup: React.FC = () => {
                 </div>
             )}
 
-            {/* Local Debug Controls - Only show when no data */}
-            {!loading && groups.length === 0 && (
-                <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 bg-[#131313] p-4 rounded-lg border border-[#484847]/30 shadow-xl opacity-50 hover:opacity-100 transition-opacity">
-                    <p className="text-xs font-label text-zinc-500 uppercase tracking-widest text-center mb-1">Debug Controls</p>
-                    <button
-                        onClick={fetchGroups}
-                        className="bg-[#262626] hover:bg-[#484847] text-white text-xs px-4 py-2 rounded transition-colors"
-                    >
-                        Refresh Groups
-                    </button>
-                </div>
-            )}
         </div>
     );
 };
