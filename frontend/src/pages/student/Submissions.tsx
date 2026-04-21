@@ -38,7 +38,7 @@ export const Submissions: React.FC = () => {
             if (fetchedGroups.length > 0) {
                 const firstGroup = fetchedGroups[0];
                 setGroup(firstGroup);
-                const submissionsResponse = await axiosInstance.get(`/api/submissions/group/${firstGroup.id}`);
+                const submissionsResponse = await axiosInstance.get(`/api/submissions/group/${firstGroup._id}`);
                 setSubmissions(submissionsResponse.data.data);
             }
         } catch (err: any) {
@@ -56,9 +56,9 @@ export const Submissions: React.FC = () => {
             setSubmitting(true);
             setSubmitError(null);
             await axiosInstance.post('/api/submissions', {
-                assignment_id: selectedAssignment.id,
-                group_id: group.id,
-                submission_link: submissionLink
+                assignmentId: selectedAssignment._id,
+                groupId: group._id,
+                submissionLink: submissionLink
             });
             setIsSubmitModalOpen(false);
             setSubmissionLink('');
@@ -79,7 +79,12 @@ export const Submissions: React.FC = () => {
     };
 
     const isAlreadySubmitted = (assignmentId: string) => {
-        return submissions.some(s => s.assignment_id === assignmentId);
+        return submissions.some(s => {
+            const id = typeof s.assignment === 'object' && s.assignment !== null
+                ? (s.assignment as any)._id?.toString()
+                : s.assignmentId;
+            return id === assignmentId;
+        });
     };
 
     const formatDate = (dateString: string) => {
@@ -99,6 +104,8 @@ export const Submissions: React.FC = () => {
             hour12: false
         });
     };
+
+    const isLeader = user && group && (user.id === group.owner._id || user._id === group.owner._id);
 
     return (
         <div className="bg-background text-on-surface font-body min-h-screen selection:bg-primary-container/30 overflow-hidden">
@@ -172,20 +179,20 @@ export const Submissions: React.FC = () => {
                                         </thead>
                                         <tbody className="divide-y divide-white/5">
                                             {assignments.map((assignment) => {
-                                                const submitted = isAlreadySubmitted(assignment.id);
+                                                const submitted = isAlreadySubmitted(assignment._id!);
                                                 return (
-                                                    <tr key={assignment.id} className="hover:bg-white/[0.02] transition-colors">
+                                                    <tr key={assignment._id} className="hover:bg-white/[0.02] transition-colors">
                                                         <td className="px-8 py-5">
                                                             <p className="text-white font-medium">{assignment.title}</p>
                                                             <p className="text-xs text-zinc-500">{assignment.description || 'No description'}</p>
                                                         </td>
-                                                        <td className="px-8 py-5 text-sm text-zinc-400">{formatDate(assignment.due_date)}</td>
+                                                        <td className="px-8 py-5 text-sm text-zinc-400">{formatDate(assignment.dueDate)}</td>
                                                         <td className="px-8 py-5 text-right">
                                                             {submitted ? (
                                                                 <span className="px-3 py-1 rounded-full bg-[#81f3e5]/10 text-[#81f3e5] text-[10px] font-bold tracking-widest uppercase border border-[#81f3e5]/20">
                                                                     Submitted
                                                                 </span>
-                                                            ) : (
+                                                            ) : isLeader ? (
                                                                 <button
                                                                     onClick={() => openSubmitModal(assignment)}
                                                                     disabled={!group}
@@ -193,6 +200,10 @@ export const Submissions: React.FC = () => {
                                                                 >
                                                                     Submit
                                                                 </button>
+                                                            ) : (
+                                                                <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-500 text-[10px] font-bold tracking-widest uppercase border border-white/5">
+                                                                    Pending
+                                                                </span>
                                                             )}
                                                         </td>
                                                     </tr>
@@ -225,23 +236,23 @@ export const Submissions: React.FC = () => {
                                         </thead>
                                         <tbody className="divide-y divide-white/5">
                                             {submissions.map((submission) => (
-                                                <tr key={submission.id} className="hover:bg-white/[0.02] transition-colors">
+                                                <tr key={submission._id} className="hover:bg-white/[0.02] transition-colors">
                                                     <td className="px-8 py-6">
-                                                        <p className="text-white font-medium">{(submission as any).assignment_title || 'Untitled'}</p>
-                                                        <p className="text-xs text-zinc-500">{(submission as any).assignment_description || ''}</p>
+                                                        <p className="text-white font-medium">{(submission.assignment as any)?.title || 'Untitled'}</p>
+                                                        <p className="text-xs text-zinc-500">{(submission.assignment as any)?.description || ''}</p>
                                                     </td>
                                                     <td className="px-8 py-6 text-zinc-400 text-sm">
-                                                        {submission.confirmed_at ? (
-                                                            <>{formatDate(submission.confirmed_at)} <span className="text-[10px] ml-2 px-1 bg-[#262626] rounded">{formatTime(submission.confirmed_at)}</span></>
+                                                        {submission.confirmedAt ? (
+                                                            <>{formatDate(submission.confirmedAt)} <span className="text-[10px] ml-2 px-1 bg-[#262626] rounded">{formatTime(submission.confirmedAt)}</span></>
                                                         ) : (
                                                             <span className="text-zinc-600">—</span>
                                                         )}
                                                     </td>
                                                     <td className="px-8 py-6">
-                                                        {submission.submission_link ? (
-                                                            <a className="inline-flex items-center gap-2 text-primary hover:text-[#00e3fd] transition-colors text-sm" href={submission.submission_link} target="_blank" rel="noopener noreferrer">
+                                                        {submission.submissionLink ? (
+                                                            <a className="inline-flex items-center gap-2 text-primary hover:text-[#00e3fd] transition-colors text-sm" href={submission.submissionLink} target="_blank" rel="noopener noreferrer">
                                                                 <span className="material-symbols-outlined text-sm">link</span>
-                                                                {submission.submission_link.length > 40 ? submission.submission_link.substring(0, 40) + '...' : submission.submission_link}
+                                                                {submission.submissionLink.length > 40 ? submission.submissionLink.substring(0, 40) + '...' : submission.submissionLink}
                                                             </a>
                                                         ) : (
                                                             <span className="text-zinc-600 text-sm">No link</span>
@@ -276,12 +287,11 @@ export const Submissions: React.FC = () => {
                             </div>
                         )}
 
-                        {/* Step 1: Open the drive link */}
-                        {selectedAssignment.drive_link && (
+                        {selectedAssignment.driveLink && (
                             <div className="mb-6 p-4 bg-[#262626] rounded-lg border border-[#484847]/30">
-                                <p className="text-sm text-zinc-400 mb-3">Step 1: Open the submission link and complete your submission</p>
+                                <p className="text-sm text-zinc-400 mb-3">Step 1: Open the submission form and complete your work</p>
                                 <a
-                                    href={selectedAssignment.drive_link}
+                                    href={selectedAssignment.driveLink}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-lg text-sm font-bold transition-colors"
@@ -291,8 +301,17 @@ export const Submissions: React.FC = () => {
                                 </a>
                             </div>
                         )}
-
-                        <p className="text-sm text-zinc-400">Once done, click <span className="text-white font-bold">Mark as Submitted</span> to confirm.</p>
+                        <div className="mb-6">
+                            <label className="block text-sm font-label text-zinc-400 mb-2">Step 2: Paste your submission link *</label>
+                            <input
+                                type="url"
+                                className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors"
+                                placeholder="https://..."
+                                value={submissionLink}
+                                onChange={(e) => setSubmissionLink(e.target.value)}
+                                disabled={submitting}
+                            />
+                        </div>
 
                         <div className="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-[#484847]/20">
                             <button
@@ -302,13 +321,15 @@ export const Submissions: React.FC = () => {
                             >
                                 Cancel
                             </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={submitting}
-                                className="px-6 py-2 bg-[#81ecff] hover:bg-[#00d4ec] text-[#003840] rounded-full font-bold text-sm transition-colors disabled:opacity-50"
-                            >
-                                {submitting ? 'Submitting...' : 'Mark as Submitted'}
-                            </button>
+                            {isLeader && (
+                                <button
+                                    onClick={handleSubmit}
+                                    disabled={submitting || !submissionLink.trim()}
+                                    className="px-6 py-2 bg-[#81ecff] hover:bg-[#00d4ec] text-[#003840] rounded-full font-bold text-sm transition-colors disabled:opacity-50"
+                                >
+                                    {submitting ? 'Submitting...' : 'Mark as Submitted'}
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>

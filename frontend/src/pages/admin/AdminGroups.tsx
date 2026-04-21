@@ -98,9 +98,9 @@ export const AdminGroups: React.FC = () => {
                                         </thead>
                                         <tbody className="divide-y divide-[#484847]/10">
                                             {groups.map((group) => (
-                                                <tr key={group.id} className="hover:bg-white/5 transition-colors group">
+                                                <tr key={group._id!} className="hover:bg-white/5 transition-colors group">
                                                     <td className="px-8 py-5 font-medium">{group.name}</td>
-                                                    <td className="px-8 py-5 text-[#adaaaa]">{group.owner_id}</td>
+                                                    <td className="px-8 py-5 text-[#adaaaa]">{group.owner.name}</td>
                                                     <td className="px-8 py-5 text-center text-[#adaaaa]">{group.member_count || 0} members</td>
                                                     <td className="px-8 py-5 text-center">
                                                         <span className="inline-flex items-center px-3 py-1 rounded text-xs font-bold tracking-wider bg-[#81ecff]/10 text-[#81ecff] border border-[#81ecff]/20">
@@ -109,7 +109,7 @@ export const AdminGroups: React.FC = () => {
                                                     </td>
                                                     <td className="px-8 py-5 text-right">
                                                         <button
-                                                            onClick={() => handleDelete(group.id)}
+                                                            onClick={() => handleDelete(group._id!)}
                                                             className="px-4 py-2 text-xs font-bold text-[#ff716c] hover:bg-[#ff716c]/10 border border-[#ff716c]/20 rounded transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
                                                         >
                                                             Delete

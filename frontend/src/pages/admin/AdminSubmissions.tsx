@@ -101,19 +101,19 @@ export const AdminSubmissions: React.FC = () => {
                                                     <td className="px-8 py-5 text-[#adaaaa]">{(submission as any).group_name || 'N/A'}</td>
                                                     <td className="px-8 py-5 text-[#81ecff]">{(submission as any).confirmed_by_name || 'N/A'}</td>
                                                     <td className="px-8 py-5">
-                                                        {submission.confirmed_at ? (
+                                                        {submission.confirmedAt ? (
                                                             <div className="flex flex-col">
-                                                                <span className="text-sm">{formatDate(submission.confirmed_at)}</span>
-                                                                <span className="text-xs text-[#adaaaa]">{formatTime(submission.confirmed_at)}</span>
+                                                                <span className="text-sm">{formatDate(submission.confirmedAt)}</span>
+                                                                <span className="text-xs text-[#adaaaa]">{formatTime(submission.confirmedAt)}</span>
                                                             </div>
                                                         ) : (
                                                             <span className="text-[#adaaaa]">N/A</span>
                                                         )}
                                                     </td>
                                                     <td className="px-8 py-5 text-right">
-                                                        {submission.submission_link ? (
+                                                        {submission.submissionLink ? (
                                                             <a
-                                                                href={submission.submission_link}
+                                                                href={submission.submissionLink}
                                                                 target="_blank"
                                                                 rel="noopener noreferrer"
                                                                 className="inline-flex items-center gap-1 px-3 py-1 text-xs font-bold text-[#81ecff] hover:bg-[#81ecff]/10 rounded transition-colors uppercase tracking-wider"

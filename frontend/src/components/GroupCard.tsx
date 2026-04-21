@@ -34,18 +34,18 @@ export const GroupCard: React.FC<GroupCardProps> = ({ group, isEmpty, onCreateCl
             </div>
             <div className="space-y-4 mb-10 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
               {group.members?.map((member) => (
-                <div key={member.id} className="flex items-center justify-between">
+                <div key={member._id} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full border border-primary/20 bg-primary/10 flex items-center justify-center text-primary font-bold">
                       {member.name.charAt(0).toUpperCase()}
                     </div>
                     <div>
                       <p className="text-sm font-medium text-on-surface font-body">
-                        {member.name} {member.id === group.owner_id && '(Owner)'}
+                        {member.name} {member.id === group.owner._id && '(Owner)'}
                       </p>
                     </div>
                   </div>
-                  {member.id === group.owner_id && (
+                  {member.id === group.owner._id && (
                     <span className="material-symbols-outlined text-primary text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>verified</span>
                   )}
                 </div>

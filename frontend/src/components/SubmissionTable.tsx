@@ -40,21 +40,21 @@ export const SubmissionTable: React.FC<SubmissionTableProps> = ({ submissions })
                     <p className="text-sm font-bold font-headline text-on-surface">{submission.assignment?.title || 'Unknown Assignment'}</p>
                   </td>
                   <td className="py-5 text-sm text-on-surface-variant font-body">
-                    {submission.confirmed_at ? new Date(submission.confirmed_at).toLocaleDateString('en-US', {
+                    {submission.confirmedAt ? new Date(submission.confirmedAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric'
-                    }) + ' • ' + new Date(submission.confirmed_at).toLocaleTimeString('en-US', {
+                    }) + ' • ' + new Date(submission.confirmedAt).toLocaleTimeString('en-US', {
                       hour: '2-digit',
                       minute: '2-digit',
                       hour12: false
                     }) : 'Pending'}
                   </td>
                   <td className="py-5">
-                    {submission.submission_link && (
+                    {submission.submissionLink && (
                       <a 
                         className="text-primary hover:text-primary-dim transition-colors" 
-                        href={submission.submission_link}
+                        href={submission.submissionLink}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

@@ -34,9 +34,9 @@ export const StudentDashboard: React.FC = () => {
       setGroups(groupsRes.data.data);
       setAssignments(assignmentsRes.data.data);
 
-      if (groupsRes.data.length > 0) {
-        const submissionsRes = await axiosInstance.get(`/api/submissions/group/${groupsRes.data[0].id}`);
-        setSubmissions(submissionsRes.data);
+      if (groupsRes.data.data.length > 0) {
+        const submissionsRes = await axiosInstance.get(`/api/submissions/group/${groupsRes.data.data[0]._id}`);
+        setSubmissions(submissionsRes.data.data);
       }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load dashboard data');
@@ -66,8 +66,8 @@ export const StudentDashboard: React.FC = () => {
   const getUpcomingAssignments = () => {
     const now = new Date();
     return assignments
-      .filter(a => new Date(a.due_date) > now)
-      .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+      .filter(a => new Date(a.dueDate) > now)
+      .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
       .slice(0, 3);
   };
 
@@ -148,10 +148,10 @@ export const StudentDashboard: React.FC = () => {
               ) : (
                 upcomingAssignments.map((assignment) => (
                   <AssignmentCard
-                    key={assignment.id}
+                    key={assignment._id}
                     title={assignment.title}
-                    status={getStatus(assignment.due_date)}
-                    timeLeft={getTimeLeft(assignment.due_date)}
+                    status={getStatus(assignment.dueDate)}
+                    timeLeft={getTimeLeft(assignment.dueDate)}
                   />
                 ))
               )}

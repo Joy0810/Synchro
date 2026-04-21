@@ -65,6 +65,8 @@ function AppRoutes() {
       <Route path="/assignments" element={<ProtectedRoute allowedRole="student"><Assignments /></ProtectedRoute>} />
       <Route path="/my-group" element={<ProtectedRoute allowedRole="student"><MyGroup /></ProtectedRoute>} />
       <Route path="/submissions" element={<ProtectedRoute allowedRole="student"><Submissions /></ProtectedRoute>} />
+      <Route path="/courses" element={<ProtectedRoute allowedRole="student"><div>Courses Coming Soon</div></ProtectedRoute>} />
+      <Route path="/courses/:id" element={<ProtectedRoute allowedRole="student"><div>Courses Coming Soon</div></ProtectedRoute>} />
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />

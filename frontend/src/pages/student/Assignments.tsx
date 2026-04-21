@@ -59,8 +59,8 @@ export const Assignments: React.FC = () => {
   };
 
   const upcomingAssignments = assignments
-    .filter(a => new Date(a.due_date) > new Date())
-    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .filter(a => new Date(a.dueDate) > new Date())
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 3);
 
   if (loading) {
@@ -122,9 +122,9 @@ export const Assignments: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {upcomingAssignments.map((assignment) => {
-                  const status = getStatus(assignment.due_date);
+                  const status = getStatus(assignment.dueDate);
                   return (
-                    <div key={assignment.id} className="bg-[#1a1919] rounded-xl p-6 relative overflow-hidden group hover:bg-[#201f1f] transition-all glass-panel">
+                    <div key={assignment._id} className="bg-[#1a1919] rounded-xl p-6 relative overflow-hidden group hover:bg-[#201f1f] transition-all glass-panel">
                       <div className="flex justify-between items-start mb-6">
                         <span className={`${status.class} px-3 py-1 rounded-full text-[10px] font-bold font-label uppercase tracking-wider`}>{status.label}</span>
                         <span className="material-symbols-outlined text-zinc-500 hover:text-primary cursor-pointer transition-colors">more_horiz</span>
@@ -134,16 +134,16 @@ export const Assignments: React.FC = () => {
                       <div className="space-y-3 mb-8">
                         <div className="flex items-center gap-3 text-zinc-400">
                           <span className="material-symbols-outlined text-sm">calendar_today</span>
-                          <span className="text-xs font-label">Due: {formatDate(assignment.due_date)}</span>
+                          <span className="text-xs font-label">Due: {formatDate(assignment.dueDate)}</span>
                         </div>
                         <div className="flex items-center gap-3 text-primary">
                           <span className="material-symbols-outlined text-sm">schedule</span>
-                          <span className="text-xs font-label">{getTimeLeft(assignment.due_date)}</span>
+                          <span className="text-xs font-label">{getTimeLeft(assignment.dueDate)}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                        {assignment.drive_link && (
-                          <a href={assignment.drive_link} target="_blank" rel="noopener noreferrer" className="bg-[#262626] p-2 rounded-lg text-zinc-400 hover:text-primary transition-colors">
+                        {assignment.driveLink && (
+                          <a href={assignment.driveLink} target="_blank" rel="noopener noreferrer" className="bg-[#262626] p-2 rounded-lg text-zinc-400 hover:text-primary transition-colors">
                             <span className="material-symbols-outlined">drive_file_move</span>
                           </a>
                         )}
@@ -187,20 +187,20 @@ export const Assignments: React.FC = () => {
                     </tr>
                   ) : (
                     assignments.map((assignment) => {
-                      const isPast = new Date(assignment.due_date) < new Date();
+                      const isPast = new Date(assignment.dueDate) < new Date();
                       return (
-                        <tr key={assignment.id} className="hover:bg-[#201f1f]/30 transition-colors group">
+                        <tr key={assignment._id} className="hover:bg-[#201f1f]/30 transition-colors group">
                           <td className="px-6 py-5">
                             <p className="text-sm font-semibold text-white group-hover:text-primary transition-colors">{assignment.title}</p>
                             <p className="text-xs text-zinc-500">{assignment.description?.substring(0, 50)}{assignment.description && assignment.description.length > 50 ? '...' : ''}</p>
                           </td>
-                          <td className="px-6 py-5 text-sm text-zinc-400 font-label">{formatDate(assignment.due_date)}</td>
+                          <td className="px-6 py-5 text-sm text-zinc-400 font-label">{formatDate(assignment.dueDate)}</td>
                           <td className="px-6 py-5">
                             <span className={`${isPast ? 'bg-[#006a62]/30 text-[#81f3e5]' : 'bg-zinc-800 text-zinc-400'} px-3 py-1 rounded-full text-[10px] font-bold font-label uppercase tracking-wider`}>{isPast ? 'COMPLETED' : 'UPCOMING'}</span>
                           </td>
                           <td className="px-6 py-5">
-                            {assignment.drive_link ? (
-                              <a className="inline-flex items-center gap-2 text-zinc-500 hover:text-primary transition-colors" href={assignment.drive_link} target="_blank" rel="noopener noreferrer">
+                            {assignment.driveLink ? (
+                              <a className="inline-flex items-center gap-2 text-zinc-500 hover:text-primary transition-colors" href={assignment.driveLink} target="_blank" rel="noopener noreferrer">
                                 <span className="material-symbols-outlined text-lg">folder</span>
                                 <span className="text-xs">Resources</span>
                               </a>
