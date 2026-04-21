@@ -21,3 +21,21 @@ export const fetchOverview = async () => {
     pending_count,
   };
 };
+
+export const fetchCourseAnalytics = async (courseId: string) => {
+  const [total_assignments, submitted_count] = await Promise.all([
+    AssignmentModel.countDocuments({ course: courseId }),
+    SubmissionModel.countDocuments({
+      submissionStatus: 'confirmed',
+      assignment: { $in: await AssignmentModel.find({ course: courseId }).distinct('_id') }
+    }),
+  ]);
+
+  const pending_count = total_assignments - submitted_count;
+
+  return {
+    total_assignments,
+    submitted_count,
+    pending_count,
+  };
+};
