@@ -12,7 +12,8 @@ import { verifyToken, requireRole } from "../middleware/auth.middleware";
 const router=Router();
 
 const createGroupSchema=z.object({
-    name:z.string().min(3)
+    name:z.string().min(3),
+    courseId:z.string().optional()
 });
 const addMemberSchema=z.object({
     email:z.string().email()
@@ -33,8 +34,8 @@ router.get("/",async(req:AuthRequest,res,next)=>{
 
 router.post("/",requireRole("student"),async(req:AuthRequest,res,next)=>{
     try{
-        const { name }=createGroupSchema.parse(req.body);
-        const group=await createNewGroup(name,req.user!.userId);
+        const { name, courseId }=createGroupSchema.parse(req.body);
+        const group=await createNewGroup(name,req.user!.userId,courseId);
         res.json({ success:true, data:group });
     }catch(e){
         next(e);
@@ -69,7 +70,7 @@ router.delete("/:id", async (req: AuthRequest, res, next) => {
 
 router.patch("/:id/owner", async (req: AuthRequest, res, next) => {
   try {
-    const { newOwnerId } = z.object({ newOwnerId: z.string().uuid() }).parse(req.body);
+    const { newOwnerId } = z.object({ newOwnerId: z.string() }).parse(req.body);
     const result = await transferOwnership(req.params.id, newOwnerId, req.user!.userId, req.user!.role);
     res.json({ success: true, data: result });
   } catch(e) { next(e); }
