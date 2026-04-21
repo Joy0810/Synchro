@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { verifyToken, requireRole } from '../middleware/auth.middleware';
-import { fetchOverview, fetchGroupStats } from '../services/analytics.service';
+import { fetchOverview, fetchCourseAnalytics } from '../services/analytics.service';
 
 const router = Router();
 
@@ -14,9 +14,9 @@ router.get('/overview', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.get('/groups', async (req, res, next) => {
+router.get('/course/:courseId', async (req, res, next) => {
   try {
-    const data = await fetchGroupStats();
+    const data = await fetchCourseAnalytics(req.params.courseId);
     res.json({ success: true, data });
   } catch (e) { next(e); }
 });

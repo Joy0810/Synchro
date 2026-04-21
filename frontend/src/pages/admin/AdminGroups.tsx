@@ -92,24 +92,22 @@ export const AdminGroups: React.FC = () => {
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Group Name</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Owner Name</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10 w-48 text-center">Members</th>
-                                                <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10 w-48 text-center">Assignments</th>
+                                                <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10 w-48 text-center">Created</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10 w-32 text-right">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-[#484847]/10">
                                             {groups.map((group) => (
-                                                <tr key={group.id} className="hover:bg-white/5 transition-colors group">
+                                                <tr key={group._id!} className="hover:bg-white/5 transition-colors group">
                                                     <td className="px-8 py-5 font-medium">{group.name}</td>
-                                                    <td className="px-8 py-5 text-[#adaaaa]">{group.owner_id}</td>
-                                                    <td className="px-8 py-5 text-center text-[#adaaaa]">{group.member_count || 0} members</td>
-                                                    <td className="px-8 py-5 text-center">
-                                                        <span className="inline-flex items-center px-3 py-1 rounded text-xs font-bold tracking-wider bg-[#81ecff]/10 text-[#81ecff] border border-[#81ecff]/20">
-                                                            {group.assignment_count || 0} assignments
-                                                        </span>
+                                                    <td className="px-8 py-5 text-[#adaaaa]">{group.owner.name}</td>
+                                                    <td className="px-8 py-5 text-center text-[#adaaaa]">{group.members?.length || 0} members</td>
+                                                    <td className="px-8 py-5 text-center text-[#adaaaa]">
+                                                        {new Date((group as any).createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                                     </td>
                                                     <td className="px-8 py-5 text-right">
                                                         <button
-                                                            onClick={() => handleDelete(group.id)}
+                                                            onClick={() => handleDelete(group._id!)}
                                                             className="px-4 py-2 text-xs font-bold text-[#ff716c] hover:bg-[#ff716c]/10 border border-[#ff716c]/20 rounded transition-colors uppercase tracking-wider opacity-0 group-hover:opacity-100"
                                                         >
                                                             Delete

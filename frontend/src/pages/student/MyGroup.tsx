@@ -16,6 +16,7 @@ export const MyGroup: React.FC = () => {
     const [assignments, setAssignments] = useState<any[]>([]);
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
+    const [submissions, setSubmissions] = useState<any[]>([]);
 
     const selectedGroup = groups.length > 0 ? groups[0] : null;
 
@@ -33,6 +34,11 @@ export const MyGroup: React.FC = () => {
             ]);
             setGroups(groupsRes.data.data);
             setAssignments(assignmentsRes.data.data);
+
+            if (groupsRes.data.data.length > 0) {
+                const subsRes = await axiosInstance.get(`/api/submissions/group/${groupsRes.data.data[0]._id}`);
+                setSubmissions(subsRes.data.data);
+            }
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to fetch data');
             console.error('Error fetching data:', err);
@@ -67,7 +73,7 @@ export const MyGroup: React.FC = () => {
         try {
             setActionLoading(true);
             setActionError(null);
-            await axiosInstance.post(`/api/groups/${selectedGroup.id}/members`, {
+            await axiosInstance.post(`/api/groups/${selectedGroup._id}/members`, {
                 email: newMemberEmail.trim()
             });
             setNewMemberEmail('');
@@ -89,7 +95,7 @@ export const MyGroup: React.FC = () => {
         try {
             setActionLoading(true);
             setActionError(null);
-            await axiosInstance.delete(`/api/groups/${selectedGroup.id}/members/${memberId}`);
+            await axiosInstance.delete(`/api/groups/${selectedGroup._id}/members/${memberId}`);
             await fetchGroups();
         } catch (err: any) {
             setActionError(err.response?.data?.error || 'Failed to remove member');
@@ -107,7 +113,7 @@ export const MyGroup: React.FC = () => {
         try {
             setActionLoading(true);
             setActionError(null);
-            await axiosInstance.delete(`/api/groups/${selectedGroup.id}`);
+            await axiosInstance.delete(`/api/groups/${selectedGroup._id}`);
             await fetchGroups();
         } catch (err: any) {
             setActionError(err.response?.data?.error || 'Failed to delete group');
@@ -116,6 +122,13 @@ export const MyGroup: React.FC = () => {
             setActionLoading(false);
         }
     };
+
+    const isSubmitted = (assignmentId: string) => submissions.some(s => {
+        const id = typeof s.assignment === 'object' ? s.assignment?._id : s.assignmentId;
+        return id === assignmentId;
+    });
+
+    const isOwner = selectedGroup && (selectedGroup.owner._id === user?.id || selectedGroup.owner._id === user?._id);
 
     return (
         <div className="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen">
@@ -192,12 +205,12 @@ export const MyGroup: React.FC = () => {
                                         </div>
                                         <div>
                                             <h3 className="text-2xl font-bold font-headline tracking-tight text-white">{selectedGroup?.name || 'My Group'}</h3>
-                                            <p className="text-zinc-500 text-sm font-label">Team ID: {selectedGroup?.id.substring(0, 8).toUpperCase()}</p>
+                                            <p className="text-zinc-500 text-sm font-label">Team ID: {selectedGroup?._id?.substring(0, 8).toUpperCase()}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <span className="px-3 py-1 bg-[#006a62]/30 text-[#81f3e5] text-[10px] font-bold uppercase tracking-widest rounded-full border border-[#81f3e5]/20">Active Project</span>
-                                        {selectedGroup?.owner_id === user?.id && (
+                                        {isOwner && (
                                             <button
                                                 onClick={handleDeleteGroup}
                                                 disabled={actionLoading}
@@ -214,7 +227,7 @@ export const MyGroup: React.FC = () => {
                                     {/* Members List */}
                                     <div className="space-y-4">
                                         {selectedGroup?.members?.map((member) => (
-                                            <div key={member.id} className="flex items-center justify-between p-4 rounded-xl bg-[#131313] border border-white/5 hover:border-primary/20 transition-all group/item">
+                                            <div key={member._id} className="flex items-center justify-between p-4 rounded-xl bg-[#131313] border border-white/5 hover:border-primary/20 transition-all group/item">
                                                 <div className="flex items-center gap-4">
                                                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary-dim flex items-center justify-center text-[#003840] font-bold">
                                                         {member.name.charAt(0).toUpperCase()}
@@ -223,32 +236,32 @@ export const MyGroup: React.FC = () => {
                                                         <p className="font-semibold text-white">{member.name}</p>
                                                         <p className="text-xs text-zinc-500">{member.email}</p>
                                                         <div className="flex gap-2 mt-1">
-                                                            {member.id === user?.id && (
+                                                            {(member._id === user?.id || member._id === user?._id) && (
                                                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/10 text-primary uppercase">You</span>
                                                             )}
-                                                            {member.id === selectedGroup.owner_id && (
+                                                            {member._id === selectedGroup.owner._id && (
                                                                 <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#006a62]/20 text-[#81f3e5] uppercase">Owner</span>
                                                             )}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                {selectedGroup.owner_id === user?.id && member.id !== user?.id && (
+                                                {isOwner && member._id !== user?.id && member._id !== user?._id && (
                                                     <button
-                                                        onClick={() => handleRemoveMember(member.id)}
+                                                        onClick={() => handleRemoveMember(member._id!)}
                                                         disabled={actionLoading}
                                                         className="opacity-0 group-hover/item:opacity-100 p-2 rounded-full hover:bg-[#ff716c]/10 text-[#ff716c] transition-all duration-200 disabled:opacity-50"
                                                     >
                                                         <span className="material-symbols-outlined text-sm">person_remove</span>
                                                     </button>
                                                 )}
-                                                {member.id === user?.id && (
+                                                {(member._id === user?.id || member._id === user?._id) && (
                                                     <span className="material-symbols-outlined text-primary/40">verified</span>
                                                 )}
                                             </div>
                                         ))}
                                     </div>
                                     {/* Add Member Section */}
-                                    {selectedGroup?.owner_id === user?.id && (
+                                    {isOwner && (
                                         <div className="pt-6 border-t border-white/5">
                                             <div className="flex gap-2">
                                                 <div className="relative flex-1">
@@ -312,12 +325,12 @@ export const MyGroup: React.FC = () => {
                                                 </tr>
                                             ) : (
                                                 assignments.map((assignment) => {
-                                                    const dueDate = new Date(assignment.due_date);
+                                                    const dueDate = new Date(assignment.dueDate);
                                                     const isPast = dueDate < new Date();
                                                     const isUrgent = !isPast && (dueDate.getTime() - new Date().getTime()) < (24 * 60 * 60 * 1000);
 
                                                     return (
-                                                        <tr key={assignment.id} className="hover:bg-[#201f1f]/40 transition-colors group/row">
+                                                        <tr key={assignment._id} className="hover:bg-[#201f1f]/40 transition-colors group/row">
                                                             <td className="px-8 py-6">
                                                                 <div>
                                                                     <p className="font-semibold text-white mb-1">{assignment.title}</p>
@@ -333,13 +346,13 @@ export const MyGroup: React.FC = () => {
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-6">
-                                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isPast
-                                                                        ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/20'
-                                                                        : isUrgent
-                                                                            ? 'bg-[#f94d4e]/20 text-[#ff716c] border-[#ff716c]/20'
-                                                                            : 'bg-[#006a62]/30 text-[#81f3e5] border-[#81f3e5]/20'
+                                                                <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${isSubmitted(assignment._id)
+                                                                    ? 'bg-emerald-900/30 text-emerald-400 border-emerald-500/20'
+                                                                    : isUrgent
+                                                                        ? 'bg-[#f94d4e]/20 text-[#ff716c] border-[#ff716c]/20'
+                                                                        : 'bg-[#006a62]/30 text-[#81f3e5] border-[#81f3e5]/20'
                                                                     }`}>
-                                                                    {isPast ? 'Completed' : isUrgent ? 'Urgent' : 'In-Progress'}
+                                                                    {isSubmitted(assignment._id) ? 'Submitted' : isUrgent ? 'Urgent' : 'In-Progress'}
                                                                 </span>
                                                             </td>
                                                             <td className="px-8 py-6 text-right">
@@ -347,7 +360,9 @@ export const MyGroup: React.FC = () => {
                                                                     className="text-primary hover:text-white transition-colors"
                                                                     onClick={() => window.location.href = '/submissions'}
                                                                 >
-                                                                    <span className="material-symbols-outlined">{isPast ? 'check_circle' : 'arrow_forward'}</span>
+                                                                    <span className={`material-symbols-outlined ${isSubmitted(assignment._id) ? 'text-emerald-400' : ''}`}>
+                                                                        {isSubmitted(assignment._id) ? 'check_circle' : 'arrow_forward'}
+                                                                    </span>
                                                                 </button>
                                                             </td>
                                                         </tr>
@@ -470,18 +485,6 @@ export const MyGroup: React.FC = () => {
                 </div>
             )}
 
-            {/* Local Debug Controls - Only show when no data */}
-            {!loading && groups.length === 0 && (
-                <div className="fixed bottom-6 right-6 z-[100] flex flex-col gap-2 bg-[#131313] p-4 rounded-lg border border-[#484847]/30 shadow-xl opacity-50 hover:opacity-100 transition-opacity">
-                    <p className="text-xs font-label text-zinc-500 uppercase tracking-widest text-center mb-1">Debug Controls</p>
-                    <button
-                        onClick={fetchGroups}
-                        className="bg-[#262626] hover:bg-[#484847] text-white text-xs px-4 py-2 rounded transition-colors"
-                    >
-                        Refresh Groups
-                    </button>
-                </div>
-            )}
         </div>
     );
 };

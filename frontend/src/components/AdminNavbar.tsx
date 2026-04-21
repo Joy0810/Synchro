@@ -29,6 +29,10 @@ export const AdminNavbar: React.FC = () => {
             <span className="material-symbols-outlined">dashboard</span>
             <span>Dashboard</span>
           </Link>
+          <Link className={getNavClasses('/admin/courses')} to="/admin/courses">
+            <span className="material-symbols-outlined">book</span>
+            <span>Courses</span>
+          </Link>
           <Link className={getNavClasses('/admin/assignments')} to="/admin/assignments">
             <span className="material-symbols-outlined">assignment</span>
             <span>Assignments</span>

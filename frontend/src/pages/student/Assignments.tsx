@@ -7,6 +7,7 @@ import type { Assignment } from '../../types';
 export const Assignments: React.FC = () => {
   const { user } = useAuth();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -19,6 +20,12 @@ export const Assignments: React.FC = () => {
       setLoading(true);
       const response = await axiosInstance.get('/api/assignments');
       setAssignments(response.data.data);
+      const groupsRes = await axiosInstance.get('/api/groups');
+      const groups = groupsRes.data.data;
+      if (groups.length > 0) {
+        const subsRes = await axiosInstance.get(`/api/submissions/group/${groups[0]._id}`);
+        setSubmissions(subsRes.data.data);
+      }
     } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to load assignments');
       console.error('Assignments error:', err);
@@ -26,6 +33,11 @@ export const Assignments: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const isSubmitted = (assignmentId: string) => submissions.some(s => {
+    const id = typeof s.assignment === 'object' ? s.assignment?._id : s.assignmentId;
+    return id === assignmentId;
+  });
 
   const getTimeLeft = (dueDate: string) => {
     const now = new Date();
@@ -59,8 +71,8 @@ export const Assignments: React.FC = () => {
   };
 
   const upcomingAssignments = assignments
-    .filter(a => new Date(a.due_date) > new Date())
-    .sort((a, b) => new Date(a.due_date).getTime() - new Date(b.due_date).getTime())
+    .filter(a => new Date(a.dueDate) > new Date())
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime())
     .slice(0, 3);
 
   if (loading) {
@@ -122,11 +134,18 @@ export const Assignments: React.FC = () => {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {upcomingAssignments.map((assignment) => {
-                  const status = getStatus(assignment.due_date);
+                  const status = getStatus(assignment.dueDate);
                   return (
-                    <div key={assignment.id} className="bg-[#1a1919] rounded-xl p-6 relative overflow-hidden group hover:bg-[#201f1f] transition-all glass-panel">
+                    <div key={assignment._id} className="bg-[#1a1919] rounded-xl p-6 relative overflow-hidden group hover:bg-[#201f1f] transition-all glass-panel">
                       <div className="flex justify-between items-start mb-6">
-                        <span className={`${status.class} px-3 py-1 rounded-full text-[10px] font-bold font-label uppercase tracking-wider`}>{status.label}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`${status.class} px-3 py-1 rounded-full text-[10px] font-bold font-label uppercase tracking-wider`}>{status.label}</span>
+                          {(assignment as any).course?.title && (
+                            <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider truncate max-w-[120px]">
+                              {(assignment as any).course.title}
+                            </span>
+                          )}
+                        </div>
                         <span className="material-symbols-outlined text-zinc-500 hover:text-primary cursor-pointer transition-colors">more_horiz</span>
                       </div>
                       <h4 className="text-xl font-headline font-semibold text-white mb-2 leading-tight">{assignment.title}</h4>
@@ -134,22 +153,23 @@ export const Assignments: React.FC = () => {
                       <div className="space-y-3 mb-8">
                         <div className="flex items-center gap-3 text-zinc-400">
                           <span className="material-symbols-outlined text-sm">calendar_today</span>
-                          <span className="text-xs font-label">Due: {formatDate(assignment.due_date)}</span>
+                          <span className="text-xs font-label">Due: {formatDate(assignment.dueDate)}</span>
                         </div>
                         <div className="flex items-center gap-3 text-primary">
                           <span className="material-symbols-outlined text-sm">schedule</span>
-                          <span className="text-xs font-label">{getTimeLeft(assignment.due_date)}</span>
+                          <span className="text-xs font-label">{getTimeLeft(assignment.dueDate)}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                        {assignment.drive_link && (
-                          <a href={assignment.drive_link} target="_blank" rel="noopener noreferrer" className="bg-[#262626] p-2 rounded-lg text-zinc-400 hover:text-primary transition-colors">
+                        {assignment.driveLink && (
+                          <a href={assignment.driveLink} target="_blank" rel="noopener noreferrer" className="bg-[#262626] p-2 rounded-lg text-zinc-400 hover:text-primary transition-colors">
                             <span className="material-symbols-outlined">drive_file_move</span>
                           </a>
                         )}
-                        <button className="flex-1 bg-gradient-to-r from-primary to-primary-dim text-[#003840] font-bold py-2 rounded-full text-xs font-label uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_15px_rgba(129,236,255,0.2)]" onClick={() => window.location.href = '/submissions'}>
-                          SUBMIT
-                        </button>
+                        {isSubmitted(assignment._id!) 
+                          ? <span className="flex-1 text-center py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-[#81f3e5]/10 text-[#81f3e5] border border-[#81f3e5]/20">✓ Submitted</span>
+                          : <button className="flex-1 bg-gradient-to-r from-primary to-primary-dim text-[#003840] font-bold py-2 rounded-full text-xs font-label uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_15px_rgba(129,236,255,0.2)]" onClick={() => window.location.href = '/submissions'}>SUBMIT</button>
+                        }
                       </div>
                     </div>
                   );
@@ -169,6 +189,7 @@ export const Assignments: React.FC = () => {
                 <thead>
                   <tr className="bg-[#201f1f]/50 border-b border-white/5">
                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 font-label tracking-widest uppercase">Assignment</th>
+                    <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 font-label tracking-widest uppercase">Course</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 font-label tracking-widest uppercase">Due Date</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 font-label tracking-widest uppercase">Status</th>
                     <th className="px-6 py-4 text-[10px] font-bold text-zinc-500 font-label tracking-widest uppercase">Drive Link</th>
@@ -178,7 +199,7 @@ export const Assignments: React.FC = () => {
                 <tbody className="divide-y divide-white/5">
                   {assignments.length === 0 ? (
                     <tr>
-                      <td className="px-6 py-20 text-center" colSpan={5}>
+                      <td className="px-6 py-20 text-center" colSpan={6}>
                         <div className="flex flex-col items-center gap-3">
                           <span className="material-symbols-outlined text-zinc-700 text-3xl">folder_off</span>
                           <p className="text-zinc-600 font-body text-sm italic">No assignments to show in this view</p>
@@ -187,20 +208,31 @@ export const Assignments: React.FC = () => {
                     </tr>
                   ) : (
                     assignments.map((assignment) => {
-                      const isPast = new Date(assignment.due_date) < new Date();
+                      const isPast = new Date(assignment.dueDate) < new Date();
                       return (
-                        <tr key={assignment.id} className="hover:bg-[#201f1f]/30 transition-colors group">
+                        <tr key={assignment._id} className="hover:bg-[#201f1f]/30 transition-colors group">
                           <td className="px-6 py-5">
                             <p className="text-sm font-semibold text-white group-hover:text-primary transition-colors">{assignment.title}</p>
                             <p className="text-xs text-zinc-500">{assignment.description?.substring(0, 50)}{assignment.description && assignment.description.length > 50 ? '...' : ''}</p>
                           </td>
-                          <td className="px-6 py-5 text-sm text-zinc-400 font-label">{formatDate(assignment.due_date)}</td>
                           <td className="px-6 py-5">
-                            <span className={`${isPast ? 'bg-[#006a62]/30 text-[#81f3e5]' : 'bg-zinc-800 text-zinc-400'} px-3 py-1 rounded-full text-[10px] font-bold font-label uppercase tracking-wider`}>{isPast ? 'COMPLETED' : 'UPCOMING'}</span>
+                            {(assignment as any).course?.title
+                              ? <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider">{(assignment as any).course.title}</span>
+                              : <span className="text-zinc-600 text-xs">—</span>}
+                          </td>
+                          <td className="px-6 py-5 text-sm text-zinc-400 font-label">{formatDate(assignment.dueDate)}</td>
+                          <td className="px-6 py-5">
+                            {isSubmitted(assignment._id!) ? (
+                              <span className="bg-[#81f3e5]/10 text-[#81f3e5] px-3 py-1 rounded-full text-[10px] font-bold font-label uppercase tracking-wider">SUBMITTED</span>
+                            ) : (
+                              <span className={`${isPast ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-zinc-800 text-zinc-400'} px-3 py-1 rounded-full text-[10px] font-bold font-label uppercase tracking-wider`}>
+                                {isPast ? 'OVERDUE' : 'UPCOMING'}
+                              </span>
+                            )}
                           </td>
                           <td className="px-6 py-5">
-                            {assignment.drive_link ? (
-                              <a className="inline-flex items-center gap-2 text-zinc-500 hover:text-primary transition-colors" href={assignment.drive_link} target="_blank" rel="noopener noreferrer">
+                            {assignment.driveLink ? (
+                              <a className="inline-flex items-center gap-2 text-zinc-500 hover:text-primary transition-colors" href={assignment.driveLink} target="_blank" rel="noopener noreferrer">
                                 <span className="material-symbols-outlined text-lg">folder</span>
                                 <span className="text-xs">Resources</span>
                               </a>

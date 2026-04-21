@@ -30,6 +30,10 @@ export const Navbar: React.FC = () => {
             <span className="material-symbols-outlined">dashboard</span>
             <span>Dashboard</span>
           </Link>
+          <Link className={getNavClasses('/courses')} to="/courses">
+            <span className="material-symbols-outlined">book</span>
+            <span>Courses</span>
+          </Link>
           <Link className={getNavClasses('/assignments')} to="/assignments">
             <span className="material-symbols-outlined">assignment</span>
             <span>Assignments</span>

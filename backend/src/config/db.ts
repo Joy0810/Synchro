@@ -1,19 +1,16 @@
-import { Pool } from 'pg';
-import dotenv from 'dotenv';
+import mongoose from "mongoose";
 
-dotenv.config();
+const connectDB=async():Promise<void>=>{
+    const uri=process.env.MONGO_URI || "mongodb://localhost:27017/synchro";
+    try{
+        await mongoose.connect(uri);
+        console.log("Connected to MongoDB");
+    }
+    catch(error){
+        console.log("Failed to connect to MongoDB",error);
+        process.exit(1);
+    
+    }
+}
 
-const pool=new Pool({
-    connectionString:process.env.DATABASE_URL,
-});
-
-pool.on("connect",()=>{
-    console.log("Connected to the database");
-});
-
-pool.on("error",(err)=>{
-    console.log("PostgreSQL pool error",err);
-    process.exit(1);
-});
-
-export default pool;
+export default connectDB;

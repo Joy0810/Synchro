@@ -1,55 +1,72 @@
-import {
-  createSubmission,
-  getSubmissionByAssignmentAndGroup,
-  getSubmissionsByGroup,
-  getAllSubmissions,
-  isAssignmentVisibleToGroup,
-} from '../models/submission.model';
-import { getGroupById, getGroupMembers } from '../models/group.model';
-import { getAssignmentById } from '../models/assignment.model';
+import { SubmissionModel } from '../models/submission.model';
+import { AssignmentModel } from '../models/assignment.model';
+import { GroupModel } from '../models/group.model';
 import { AppError } from '../middleware/error.middleware';
 
 export const submitAssignment = async (
-  assignment_id: string,
-  group_id: string,
+  assignmentId: string,
+  groupId: string,
   userId: string,
-  submission_link: string
+  submissionLink: string
 ) => {
-  const assignment = await getAssignmentById(assignment_id);
+  const assignment = await AssignmentModel.findById(assignmentId);
   if (!assignment) throw new AppError(404, 'Assignment not found');
 
-  const group = await getGroupById(group_id);
+  const group = await GroupModel.findById(groupId);
   if (!group) throw new AppError(404, 'Group not found');
 
-  const members = await getGroupMembers(group_id);
-  const isMember = members.some(m => m.id === userId);
-  if (!isMember) throw new AppError(403, 'You are not a member of this group');
+  // only group leader can confirm
+  if (group.owner.toString() !== userId)
+    throw new AppError(403, 'Only the group leader can confirm submission');
 
-  if (assignment.assigned_to === 'specific') {
-    const visible = await isAssignmentVisibleToGroup(assignment_id, group_id);
-    if (!visible) throw new AppError(403, 'This assignment is not assigned to your group');
+  // check assignment is visible to this group
+  if (assignment.assignedTo === 'specific') {
+    const isAssigned = assignment.assignedGroups.map(g => g.toString()).includes(groupId);
+    if (!isAssigned) throw new AppError(403, 'This assignment is not assigned to your group');
   }
 
-  const existing = await getSubmissionByAssignmentAndGroup(assignment_id, group_id);
+  // check for duplicate
+  const existing = await SubmissionModel.findOne({ assignment: assignmentId, group: groupId });
   if (existing) throw new AppError(409, 'Assignment already submitted by this group');
 
-  if (new Date() > new Date(assignment.due_date))
-    throw new AppError(400, 'Assignment due date has passed');
-
-  return createSubmission(assignment_id, group_id, userId, submission_link);
+  const submission = await SubmissionModel.create({
+    assignment: assignmentId,
+    group: groupId,
+    confirmedBy: userId,
+    confirmedAt: new Date(),
+    submissionLink,
+    submissionStatus: 'confirmed',
+  });
+  return submission;
 };
 
-export const getGroupSubmissions = async (group_id: string, userId: string) => {
-  const group = await getGroupById(group_id);
+export const getGroupSubmissions = async (groupId: string, userId: string) => {
+  const group = await GroupModel.findById(groupId);
   if (!group) throw new AppError(404, 'Group not found');
 
-  const members = await getGroupMembers(group_id);
-  const isMember = members.some(m => m.id === userId);
+  const isMember = group.members.map(m => m.toString()).includes(userId);
   if (!isMember) throw new AppError(403, 'You are not a member of this group');
 
-  return getSubmissionsByGroup(group_id);
+  const submissions = await SubmissionModel.find({ group: groupId })
+    .populate('assignment', 'title dueDate driveLink course')
+    .populate('confirmedBy', 'name email');
+
+  const now = new Date();
+  return submissions.map(sub => {
+    const assignment = sub.assignment as any;
+    const effectiveStatus =
+      sub.submissionStatus === 'confirmed'
+        ? 'confirmed'
+        : now > new Date(assignment.dueDate)
+        ? 'overdue'
+        : 'pending';
+    return { ...sub.toObject(), submissionStatus: effectiveStatus };
+  });
 };
 
 export const getAllSubmissionsAdmin = async () => {
-  return getAllSubmissions();
+  return SubmissionModel.find()
+    .populate('assignment', 'title dueDate course')
+    .populate('group', 'name')
+    .populate('confirmedBy', 'name email');
 };

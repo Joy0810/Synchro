@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { AdminNavbar } from '../../components/AdminNavbar';
 import axiosInstance from '../../api/axios';
-import type { Assignment, Group } from '../../types';
+import type { Assignment, Group, Course } from '../../types';
 
 interface CreateAssignmentForm {
     title: string;
     description: string;
-    due_date: string;
-    drive_link: string;
-    assigned_to: 'all' | 'specific';
-    group_ids: string[];
+    dueDate: string;
+    driveLink: string;
+    assignedTo: 'all' | 'specific';
+    groupIds: string[];
+    courseId: string;
 }
 
 export const AdminAssignments: React.FC = () => {
@@ -17,6 +18,8 @@ export const AdminAssignments: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [assignments, setAssignments] = useState<Assignment[]>([]);
     const [groups, setGroups] = useState<Group[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
+    const [submissions, setSubmissions] = useState<any[]>([]);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
@@ -24,10 +27,11 @@ export const AdminAssignments: React.FC = () => {
     const [formData, setFormData] = useState<CreateAssignmentForm>({
         title: '',
         description: '',
-        due_date: '',
-        drive_link: '',
-        assigned_to: 'all',
-        group_ids: []
+        dueDate: '',
+        driveLink: '',
+        courseId: '',
+        assignedTo: 'all',
+        groupIds: []
     });
 
     useEffect(() => {
@@ -38,12 +42,16 @@ export const AdminAssignments: React.FC = () => {
         try {
             setLoading(true);
             setError(null);
-            const [assignmentsRes, groupsRes] = await Promise.all([
+            const [assignmentsRes, groupsRes, coursesRes, submissionsRes] = await Promise.all([
                 axiosInstance.get('/api/assignments'),
-                axiosInstance.get('/api/groups')
+                axiosInstance.get('/api/groups'),
+                axiosInstance.get('/api/courses'),
+                axiosInstance.get('/api/submissions/admin')
             ]);
             setAssignments(assignmentsRes.data.data);
             setGroups(groupsRes.data.data);
+            setCourses(coursesRes.data.data);
+            setSubmissions(submissionsRes.data.data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to load assignments');
             console.error('Assignments error:', err);
@@ -54,14 +62,15 @@ export const AdminAssignments: React.FC = () => {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.title || !formData.due_date) return;
+        if (!formData.title || !formData.dueDate) return;
 
         try {
             setSubmitting(true);
             setError(null);
             const payload = {
                 ...formData,
-                due_date: new Date(formData.due_date).toISOString()
+                courseId: formData.courseId || undefined,
+                dueDate: new Date(formData.dueDate).toISOString()
             };
             await axiosInstance.post('/api/assignments', payload);
             await fetchData();
@@ -77,16 +86,17 @@ export const AdminAssignments: React.FC = () => {
 
     const handleEdit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingAssignment || !formData.title || !formData.due_date) return;
+        if (!editingAssignment || !formData.title || !formData.dueDate) return;
 
         try {
             setSubmitting(true);
             setError(null);
             const payload = {
                 ...formData,
-                due_date: new Date(formData.due_date).toISOString()
+                courseId: formData.courseId || undefined,
+                dueDate: new Date(formData.dueDate).toISOString()
             };
-            await axiosInstance.put(`/api/assignments/${editingAssignment.id}`, payload);
+            await axiosInstance.put(`/api/assignments/${editingAssignment._id!}`, payload);
             await fetchData();
             setIsEditModalOpen(false);
             setEditingAssignment(null);
@@ -116,10 +126,11 @@ export const AdminAssignments: React.FC = () => {
         setFormData({
             title: assignment.title,
             description: assignment.description || '',
-            due_date: assignment.due_date,
-            drive_link: assignment.drive_link || '',
-            assigned_to: assignment.assigned_to,
-            group_ids: []
+            dueDate: assignment.dueDate,
+            driveLink: assignment.driveLink || '',
+            courseId: (assignment as any).course?._id || '',
+            assignedTo: assignment.assignedTo,
+            groupIds: []
         });
         setIsEditModalOpen(true);
     };
@@ -128,10 +139,11 @@ export const AdminAssignments: React.FC = () => {
         setFormData({
             title: '',
             description: '',
-            due_date: '',
-            drive_link: '',
-            assigned_to: 'all',
-            group_ids: []
+            dueDate: '',
+            driveLink: '',
+            courseId: '',
+            assignedTo: 'all',
+            groupIds: []
         });
     };
 
@@ -196,30 +208,43 @@ export const AdminAssignments: React.FC = () => {
                                         <thead>
                                             <tr className="bg-[#201f1f]/30">
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10">Title</th>
+                                                <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest border-b border-[#484847]/10 w-48">Course</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-center border-b border-[#484847]/10 w-48">Due Date</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-center border-b border-[#484847]/10 w-48">Assigned To</th>
-                                                <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-right border-b border-[#484847]/10 w-32">Action</th>
+                                                <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-center border-b border-[#484847]/10 w-32">Submissions</th>
+                                                <th className="px-8 py-4 text-xs font-bold text-[#adaaaa] uppercase tracking-widest text-right border-b border-[#484847]/10 w-32">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-[#484847]/10">
                                             {assignments.map((assignment) => (
-                                                <tr key={assignment.id} className="hover:bg-white/5 transition-colors group">
+                                                <tr key={assignment._id!} className="hover:bg-white/5 transition-colors group">
                                                     <td className="px-8 py-5 font-medium">{assignment.title}</td>
-                                                    <td className="px-8 py-5 text-center text-sm text-[#adaaaa]">{formatDate(assignment.due_date)}</td>
+                                                    <td className="px-8 py-5 text-sm text-[#adaaaa]">
+                                                        {(assignment as any).course?.title
+                                                            ? <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider whitespace-nowrap">{(assignment as any).course.title}</span>
+                                                            : <span className="text-zinc-600">—</span>}
+                                                    </td>
+                                                    <td className="px-8 py-5 text-center text-sm text-[#adaaaa]">{formatDate(assignment.dueDate)}</td>
                                                     <td className="px-8 py-5 text-center">
-                                                        <span className={`inline-flex items-center px-3 py-1 rounded text-[10px] font-bold tracking-wider uppercase ${assignment.assigned_to === 'all'
+                                                        <span className={`inline-flex items-center px-3 py-1 rounded text-[10px] font-bold tracking-wider uppercase ${assignment.assignedTo === 'all'
                                                             ? 'bg-[#81ecff]/10 text-[#81ecff] border border-[#81ecff]/20'
                                                             : 'bg-[#c084fc]/10 text-[#c084fc] border border-[#c084fc]/20'
                                                             }`}>
-                                                            {assignment.assigned_to === 'all' ? 'ALL GROUPS' : 'SPECIFIC GROUPS'}
+                                                            {assignment.assignedTo === 'all' ? 'ALL GROUPS' : 'SPECIFIC GROUPS'}
                                                         </span>
+                                                    </td>
+                                                    <td className="px-8 py-5 text-center">
+                                                        <span className="text-sm font-mono text-[#81ecff]">
+                                                            {submissions.filter(s => (s.assignment as any)?._id === assignment._id || (s as any).assignmentId === assignment._id).length}
+                                                        </span>
+                                                        <span className="text-xs text-zinc-600 ml-1">submitted</span>
                                                     </td>
                                                     <td className="px-8 py-5">
                                                         <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                             <button onClick={() => openEditModal(assignment)} className="p-2 text-[#adaaaa] hover:text-[#81ecff] transition-colors rounded-full hover:bg-white/10" title="Edit">
                                                                 <span className="material-symbols-outlined text-[18px]">edit</span>
                                                             </button>
-                                                            <button onClick={() => handleDelete(assignment.id)} className="p-2 text-[#adaaaa] hover:text-[#ff716c] transition-colors rounded-full hover:bg-white/10" title="Delete">
+                                                            <button onClick={() => handleDelete(assignment._id!)} className="p-2 text-[#adaaaa] hover:text-[#ff716c] transition-colors rounded-full hover:bg-white/10" title="Delete">
                                                                 <span className="material-symbols-outlined text-[18px]">delete</span>
                                                             </button>
                                                         </div>
@@ -252,26 +277,33 @@ export const AdminAssignments: React.FC = () => {
                             </div>
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Due Date *</label>
-                                <input type="datetime-local" value={formData.due_date} onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" required />
+                                <input type="datetime-local" value={formData.dueDate} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" required />
                             </div>
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Drive Link</label>
-                                <input type="text" value={formData.drive_link} onChange={(e) => setFormData({ ...formData, drive_link: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" placeholder="https://..." />
+                                <input type="text" value={formData.driveLink} onChange={(e) => setFormData({ ...formData, driveLink: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" placeholder="https://..." />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-label text-[#adaaaa] mb-1">Course (Optional)</label>
+                                <select value={formData.courseId} onChange={(e) => setFormData({ ...formData, courseId: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors appearance-none font-body">
+                                    <option value="">No specific course</option>
+                                    {courses.map(c => <option key={c._id} value={c._id}>{c.title}</option>)}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Assigned To *</label>
-                                <select value={formData.assigned_to} onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value as 'all' | 'specific' })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors appearance-none">
+                                <select value={formData.assignedTo} onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value as 'all' | 'specific' })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors appearance-none">
                                     <option value="all">All Groups</option>
                                     <option value="specific">Specific Groups</option>
                                 </select>
                             </div>
-                            {formData.assigned_to === 'specific' && (
+                            {formData.assignedTo === 'specific' && (
                                 <div>
                                     <label className="block text-sm font-label text-[#adaaaa] mb-1">Select Groups</label>
                                     <div className="bg-[#262626] border border-[#484847]/30 rounded-lg p-3 max-h-40 overflow-y-auto">
                                         {groups.map((group) => (
-                                            <label key={group.id} className="flex items-center gap-2 py-1 cursor-pointer hover:text-[#81ecff] transition-colors">
-                                                <input type="checkbox" checked={formData.group_ids.includes(group.id)} onChange={(e) => { if (e.target.checked) { setFormData({ ...formData, group_ids: [...formData.group_ids, group.id] }); } else { setFormData({ ...formData, group_ids: formData.group_ids.filter(id => id !== group.id) }); } }} className="rounded" />
+                                            <label key={group._id!} className="flex items-center gap-2 py-1 cursor-pointer hover:text-[#81ecff] transition-colors">
+                                                <input type="checkbox" checked={formData.groupIds.includes(group._id!)} onChange={(e) => { if (e.target.checked) { setFormData({ ...formData, groupIds: [...formData.groupIds, group._id!] }); } else { setFormData({ ...formData, groupIds: formData.groupIds.filter(id => id !== group._id!) }); } }} className="rounded" />
                                                 <span className="text-sm">{group.name}</span>
                                             </label>
                                         ))}
@@ -306,26 +338,26 @@ export const AdminAssignments: React.FC = () => {
                             </div>
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Due Date *</label>
-                                <input type="datetime-local" value={formData.due_date} onChange={(e) => setFormData({ ...formData, due_date: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" required />
+                                <input type="datetime-local" value={formData.dueDate} onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" required />
                             </div>
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Drive Link</label>
-                                <input type="text" value={formData.drive_link} onChange={(e) => setFormData({ ...formData, drive_link: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" placeholder="https://..." />
+                                <input type="text" value={formData.driveLink} onChange={(e) => setFormData({ ...formData, driveLink: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" placeholder="https://..." />
                             </div>
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Assigned To *</label>
-                                <select value={formData.assigned_to} onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value as 'all' | 'specific' })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors appearance-none">
+                                <select value={formData.assignedTo} onChange={(e) => setFormData({ ...formData, assignedTo: e.target.value as 'all' | 'specific' })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors appearance-none">
                                     <option value="all">All Groups</option>
                                     <option value="specific">Specific Groups</option>
                                 </select>
                             </div>
-                            {formData.assigned_to === 'specific' && (
+                            {formData.assignedTo === 'specific' && (
                                 <div>
                                     <label className="block text-sm font-label text-[#adaaaa] mb-1">Select Groups</label>
                                     <div className="bg-[#262626] border border-[#484847]/30 rounded-lg p-3 max-h-40 overflow-y-auto">
                                         {groups.map((group) => (
-                                            <label key={group.id} className="flex items-center gap-2 py-1 cursor-pointer hover:text-[#81ecff] transition-colors">
-                                                <input type="checkbox" checked={formData.group_ids.includes(group.id)} onChange={(e) => { if (e.target.checked) { setFormData({ ...formData, group_ids: [...formData.group_ids, group.id] }); } else { setFormData({ ...formData, group_ids: formData.group_ids.filter(id => id !== group.id) }); } }} className="rounded" />
+                                            <label key={group._id!} className="flex items-center gap-2 py-1 cursor-pointer hover:text-[#81ecff] transition-colors">
+                                                <input type="checkbox" checked={formData.groupIds.includes(group._id!)} onChange={(e) => { if (e.target.checked) { setFormData({ ...formData, groupIds: [...formData.groupIds, group._id!] }); } else { setFormData({ ...formData, groupIds: formData.groupIds.filter(id => id !== group._id!) }); } }} className="rounded" />
                                                 <span className="text-sm">{group.name}</span>
                                             </label>
                                         ))}

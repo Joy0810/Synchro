@@ -7,24 +7,29 @@ import { AuthRequest } from '../types';
 const router = Router();
 
 const submitSchema = z.object({
-  assignment_id: z.string().uuid(),
-  group_id: z.string().uuid(),
-  submission_link: z.string().optional().nullable(),
+  assignmentId: z.string(),
+  groupId: z.string(),
+  submissionLink: z.string().optional().nullable(),
 });
 
 router.use(verifyToken);
 
-router.post('/', requireRole('student'), async (req: AuthRequest, res, next) => {
+router.post('/', async (req: AuthRequest, res, next) => {
   try {
-    const { assignment_id, group_id, submission_link } = submitSchema.parse(req.body);
-    const submission = await submitAssignment(assignment_id, group_id, req.user!.userId, submission_link ?? "");
+    const { assignmentId, groupId, submissionLink } = submitSchema.parse(req.body);
+    const submission = await submitAssignment(
+      assignmentId,
+      groupId,
+      req.user!.userId,
+      submissionLink ?? ''
+    );
     res.status(201).json({ success: true, data: submission });
   } catch (e) { next(e); }
 });
 
-router.get('/group/:group_id', requireRole('student'), async (req: AuthRequest, res, next) => {
+router.get('/group/:groupId', async (req: AuthRequest, res, next) => {
   try {
-    const submissions = await getGroupSubmissions(req.params.group_id, req.user!.userId);
+    const submissions = await getGroupSubmissions(req.params.groupId, req.user!.userId);
     res.json({ success: true, data: submissions });
   } catch (e) { next(e); }
 });

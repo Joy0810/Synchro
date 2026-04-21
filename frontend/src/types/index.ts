@@ -1,5 +1,6 @@
 export interface User {
-  id: string;
+  _id: string;
+  id?: string;
   name: string;
   email: string;
   role: 'student' | 'admin';
@@ -18,10 +19,21 @@ export interface RegisterCredentials {
   role: 'student' | 'admin';
 }
 
+export interface Course {
+  _id: string;
+  title: string;
+  description: string;
+  courseCode: string;
+  createdBy: { _id: string; name: string; email: string };
+  enrolledStudents: { _id: string; name: string; email: string }[];
+  createdAt: string;
+}
+
 export interface Group {
-  id: string;
+  _id: string;
+  id?: string;
   name: string;
-  owner_id: string;
+  owner: { _id: string; name: string; email: string };
   created_at: string;
   members?: User[];
   member_count?: number;
@@ -29,23 +41,27 @@ export interface Group {
 }
 
 export interface Assignment {
-  id: string;
+  _id: string;
+  id?: string;
   title: string;
   description?: string;
-  due_date: string;
-  drive_link?: string;
+  dueDate: string;
+  driveLink?: string;
   created_by?: string;
-  assigned_to: 'all' | 'specific';
+  assignedTo: 'all' | 'specific';
+  groupIds?: string[];
   created_at: string;
 }
 
 export interface Submission {
-  id: string;
-  assignment_id: string;
-  group_id: string;
+  _id: string;
+  id?: string;
+  assignmentId: string;
+  groupId: string;
   confirmed_by?: string;
-  confirmed_at?: string;
-  submission_link?: string;
+  confirmedAt?: string;
+  submissionLink?: string;
+  submissionStatus: "pending" | "confirmed" | "overdue";
   assignment?: Assignment;
   group?: Group;
   confirmed_by_user?: User;
@@ -56,6 +72,7 @@ export interface AnalyticsOverview {
   total_assignments: number;
   submitted_count: number;
   pending_count: number;
+  total_courses?: number;
 }
 
 export interface GroupAnalytics {
