@@ -4,7 +4,7 @@ export interface IAssignment extends Document{
     title:string;
     description:string;
     dueDate:Date;
-    driveLink:string;
+    driveLink:string|null;
     createdBy:mongoose.Types.ObjectId;
     course:mongoose.Types.ObjectId|null;
     assignedTo:"all"|"specific";
@@ -20,7 +20,7 @@ const assignmentSchema=new Schema<IAssignment>({
     course:{type:mongoose.Schema.Types.ObjectId,ref:"Course",default:null},
     assignedTo:{type:String,enum:["all","specific"],required:true},
     assignedGroups:[{type:mongoose.Schema.Types.ObjectId,ref:"Group"}],
-    driveLink:{type:String,required:true},
+    driveLink:{type:String,required:false},
 },{timestamps:true
 })
 

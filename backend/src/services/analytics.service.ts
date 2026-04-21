@@ -1,22 +1,23 @@
-import { getOverviewStats, getGroupStats } from '../models/analytics.model';
+import { GroupModel } from '../models/group.model';
+import { AssignmentModel } from '../models/assignment.model';
+import { SubmissionModel } from '../models/submission.model';
+import { CourseModel } from '../models/course.model';
 
 export const fetchOverview = async () => {
-  const stats = await getOverviewStats();
-  return {
-    total_groups: parseInt(stats.total_groups),
-    total_assignments: parseInt(stats.total_assignments),
-    submitted_count: parseInt(stats.submitted_count),
-    pending_count: parseInt(stats.pending_count),
-  };
-};
+  const [total_groups, total_assignments, total_courses, submitted_count] = await Promise.all([
+    GroupModel.countDocuments(),
+    AssignmentModel.countDocuments(),
+    CourseModel.countDocuments(),
+    SubmissionModel.countDocuments({ submissionStatus: 'confirmed' }),
+  ]);
 
-export const fetchGroupStats = async () => {
-  const rows = await getGroupStats();
-  return rows.map(r => ({
-    id: r.id,
-    name: r.name,
-    submitted_count: parseInt(r.submitted_count),
-    total_assignments: parseInt(r.total_assignments),
-    pending_count: parseInt(r.total_assignments) - parseInt(r.submitted_count),
-  }));
+  const pending_count = total_assignments - submitted_count;
+
+  return {
+    total_groups,
+    total_assignments,
+    total_courses,
+    submitted_count,
+    pending_count,
+  };
 };
