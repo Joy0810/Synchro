@@ -91,7 +91,19 @@ export const getAllSubmissionsAdmin = async () => {
     .populate('confirmedBy', 'name email');
 };  
 export const getUserSubmissions = async (userId: string) => {
-  const submissions = await SubmissionModel.find({ confirmedBy: userId })
+  // Find all groups the user belongs to
+  const userGroups = await GroupModel.find({ members: userId });
+  const groupIds = userGroups.map(g => g._id);
+
+  // Find submissions that are either:
+  // 1. Confirmed by the user (covers individual assignments they submitted)
+  // 2. For a group the user belongs to (covers group assignments submitted by their leader)
+  const submissions = await SubmissionModel.find({
+    $or: [
+      { confirmedBy: userId },
+      { group: { $in: groupIds } }
+    ]
+  })
     .populate('assignment', 'title dueDate driveLink course')
     .populate('confirmedBy', 'name email');
 

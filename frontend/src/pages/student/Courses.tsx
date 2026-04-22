@@ -25,20 +25,15 @@ export const Courses: React.FC = () => {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const [coursesRes, groupsRes, assignmentsRes] = await Promise.all([
+            const [coursesRes, assignmentsRes, submissionsRes] = await Promise.all([
                 axiosInstance.get('/api/courses'),
-                axiosInstance.get('/api/groups'),
                 axiosInstance.get('/api/assignments'),
+                axiosInstance.get('/api/submissions/my'),
             ]);
 
             setCourses(coursesRes.data.data);
             setAssignments(assignmentsRes.data.data);
-
-            const userGroups = groupsRes.data.data;
-            if (userGroups.length > 0) {
-                const submissionsRes = await axiosInstance.get(`/api/submissions/group/${userGroups[0]._id}`);
-                setSubmissions(submissionsRes.data.data);
-            }
+            setSubmissions(submissionsRes.data.data);
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to load courses');
             console.error('Courses fetch error:', err);
