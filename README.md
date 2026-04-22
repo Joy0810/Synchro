@@ -22,7 +22,7 @@
 | Round | Video |
 |---|---|
 | **Round 1** — Core functional prototype | [Watch on Loom](https://www.loom.com/share/545abd3bc6af415ca46f2f0c8458f6f4) |
-| **Round 2** — UI/UX polish + MongoDB + Deployment | *Link will be added before submission* |
+| **Round 2** — UI/UX polish + MongoDB + Deployment | [Watch on Loom](https://www.loom.com/share/28992b5ac7a245418bc18823107c3cdd) |
 
 ---
 
