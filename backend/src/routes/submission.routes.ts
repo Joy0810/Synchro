@@ -8,7 +8,7 @@ const router = Router();
 
 const submitSchema = z.object({
   assignmentId: z.string(),
-  groupId: z.string(),
+  groupId: z.string().optional().nullable(),
   submissionLink: z.string().optional().nullable(),
 });
 
