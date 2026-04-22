@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Navbar } from '../../components/Navbar';
 import { EmptyState } from '../../components/EmptyState';
+import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../api/axios';
 import { type Assignment, type Submission, type Course, type Group } from '../../types';
 
 export const CourseAssignments: React.FC = () => {
     const { id: courseId } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { user } = useAuth();
 
     const [course, setCourse] = useState<Course | null>(null);
     const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -86,7 +88,10 @@ export const CourseAssignments: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedAssignment || !studentGroup || !submissionLink.trim()) return;
+        if (!selectedAssignment || !submissionLink.trim()) return;
+
+        const isGroupRequired = selectedAssignment.assignedTo === 'specific';
+        if (isGroupRequired && !studentGroup) return;
 
         try {
             setSubmitting(true);
@@ -94,11 +99,13 @@ export const CourseAssignments: React.FC = () => {
             
             await axiosInstance.post('/api/submissions', {
                 assignmentId: selectedAssignment._id,
-                groupId: studentGroup._id,
+                groupId: isGroupRequired ? studentGroup?._id : null,
                 submissionLink: submissionLink.trim()
             });
 
-            await refreshSubmissions(studentGroup._id);
+            if (studentGroup) {
+                await refreshSubmissions(studentGroup._id);
+            }
             setIsModalOpen(false);
         } catch (err: any) {
             setSubmitError(err.response?.data?.error || 'Failed to submit assignment');
@@ -268,6 +275,18 @@ export const CourseAssignments: React.FC = () => {
                                 {selectedAssignment?.title}
                             </p>
 
+                            {selectedAssignment?.assignedTo === 'specific' && !studentGroup && (
+                                <div className="mb-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-3">
+                                    <p className="text-yellow-400 text-xs">Join a group first to submit this assignment.</p>
+                                </div>
+                            )}
+
+                            {selectedAssignment?.assignedTo === 'specific' && studentGroup && user && studentGroup.owner._id !== (user.id || user._id) && (
+                                <div className="mb-4 bg-blue-500/10 border border-blue-500/30 rounded-lg p-3">
+                                    <p className="text-blue-400 text-xs">Only the group leader can submit this assignment.</p>
+                                </div>
+                            )}
+
                             {selectedAssignment?.driveLink && (
                                 <div className="mb-6 p-4 bg-cyan-500/5 rounded-lg border border-cyan-500/10">
                                     <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Assignment Resource</p>
@@ -317,9 +336,15 @@ export const CourseAssignments: React.FC = () => {
                                     <button
                                         type="submit"
                                         className="flex-1 px-4 py-2.5 bg-cyan-500 text-cyan-950 rounded-lg text-sm font-bold hover:bg-cyan-400 transition-colors shadow-lg shadow-cyan-500/10 disabled:opacity-50"
-                                        disabled={submitting}
+                                        disabled={
+                                            submitting || 
+                                            (selectedAssignment?.assignedTo === 'specific' && (!studentGroup || studentGroup.owner._id !== (user?.id || user?._id)))
+                                        }
                                     >
-                                        {submitting ? 'Submitting...' : 'Confirm Submission'}
+                                        {submitting ? 'Submitting...' : 
+                                         (selectedAssignment?.assignedTo === 'specific' && !studentGroup) ? 'Join a group first' :
+                                         (selectedAssignment?.assignedTo === 'specific' && studentGroup && studentGroup.owner._id !== (user?.id || user?._id)) ? 'Only leader can submit' :
+                                         'Confirm Submission'}
                                     </button>
                                 </div>
                             </form>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export type AssignmentStatus = 'URGENT' | 'DUE SOON' | 'IN PROGRESS';
 
@@ -9,6 +10,7 @@ export interface AssignmentCardProps {
 }
 
 export const AssignmentCard: React.FC<AssignmentCardProps> = ({ title, status, timeLeft }) => {
+  const navigate = useNavigate();
   let borderClass = '';
   let badgeBgClass = '';
   let badgeTextClass = '';
@@ -54,7 +56,7 @@ export const AssignmentCard: React.FC<AssignmentCardProps> = ({ title, status, t
       </div>
       <div className="flex items-center justify-between mt-6">
         <button
-          onClick={() => window.location.href = '/submissions'}
+          onClick={() => navigate('/submissions')}
           className="bg-gradient-to-br from-primary to-primary-dim text-on-primary-fixed px-6 py-2 rounded-full font-bold font-label text-xs tracking-tighter hover:scale-105 active:scale-95 transition-transform"
         >
           SUBMIT

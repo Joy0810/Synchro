@@ -60,14 +60,17 @@ export const Submissions: React.FC = () => {
     };
 
     const handleSubmit = async () => {
-        if (!selectedAssignment || !group) return;
+        if (!selectedAssignment) return;
+        
+        const isGroupRequired = selectedAssignment.assignedTo === 'specific';
+        if (isGroupRequired && !group) return;
 
         try {
             setSubmitting(true);
             setSubmitError(null);
             await axiosInstance.post('/api/submissions', {
                 assignmentId: selectedAssignment._id,
-                groupId: group._id,
+                groupId: isGroupRequired ? group?._id : null,
                 submissionLink: submissionLink
             });
             setIsSubmitModalOpen(false);
@@ -237,9 +240,8 @@ export const Submissions: React.FC = () => {
                                                                     Submitted
                                                                 </span>
                                                             ) : (
-                                                                <button
+                                                                 <button
                                                                     onClick={() => openSubmitModal(assignment)}
-                                                                    disabled={!group}
                                                                     className="px-4 py-2 bg-primary hover:bg-primary/80 text-[#003840] rounded-full text-xs font-bold uppercase tracking-wider transition-colors disabled:opacity-50"
                                                                 >
                                                                     Submit
@@ -337,6 +339,18 @@ export const Submissions: React.FC = () => {
                             </div>
                         )}
 
+                        {selectedAssignment.assignedTo === 'specific' && !group && (
+                            <div className="mb-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg p-3">
+                                <p className="text-yellow-400 text-sm">You must be in a group to submit this assignment.</p>
+                            </div>
+                        )}
+
+                        {selectedAssignment.assignedTo === 'specific' && group && user && group.owner._id !== (user.id || user._id) && (
+                            <div className="mb-4 bg-blue-900/20 border border-blue-500/30 rounded-lg p-3">
+                                <p className="text-blue-400 text-sm">Only the group leader can submit this assignment.</p>
+                            </div>
+                        )}
+
                         {selectedAssignment.driveLink && (
                             <div className="mb-6 p-4 bg-[#262626] rounded-lg border border-[#484847]/30">
                                 <p className="text-sm text-zinc-400 mb-3">Step 1: Open the submission form and complete your work</p>
@@ -373,10 +387,17 @@ export const Submissions: React.FC = () => {
                             </button>
                             <button
                                 onClick={handleSubmit}
-                                disabled={submitting || !submissionLink.trim()}
+                                disabled={
+                                    submitting || 
+                                    !submissionLink.trim() || 
+                                    (selectedAssignment.assignedTo === 'specific' && (!group || group.owner._id !== (user?.id || user?._id)))
+                                }
                                 className="px-6 py-2 bg-[#81ecff] hover:bg-[#00d4ec] text-[#003840] rounded-full font-bold text-sm transition-colors disabled:opacity-50"
                             >
-                                {submitting ? 'Submitting...' : 'Mark as Submitted'}
+                                {submitting ? 'Submitting...' : 
+                                 (selectedAssignment.assignedTo === 'specific' && !group) ? 'Join a group first' :
+                                 (selectedAssignment.assignedTo === 'specific' && group && group.owner._id !== (user?.id || user?._id)) ? 'Only leader can submit' :
+                                 'Mark as Submitted'}
                             </button>
                         </div>
                     </div>
