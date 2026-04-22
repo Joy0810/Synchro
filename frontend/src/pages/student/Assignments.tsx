@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../../components/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../api/axios';
@@ -6,6 +7,7 @@ import type { Assignment } from '../../types';
 
 export const Assignments: React.FC = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -162,13 +164,14 @@ export const Assignments: React.FC = () => {
                       </div>
                       <div className="flex items-center gap-3 pt-4 border-t border-white/5">
                         {assignment.driveLink && (
-                          <a href={assignment.driveLink} target="_blank" rel="noopener noreferrer" className="bg-[#262626] p-2 rounded-lg text-zinc-400 hover:text-primary transition-colors">
-                            <span className="material-symbols-outlined">drive_file_move</span>
+                          <a href={assignment.driveLink} target="_blank" rel="noopener noreferrer" className="bg-[#262626] px-3 py-2 rounded-lg text-zinc-400 hover:text-primary transition-colors flex items-center gap-2">
+                            <span className="material-symbols-outlined text-sm">drive_file_move</span>
+                            <span className="text-xs font-label">Resources</span>
                           </a>
                         )}
                         {isSubmitted(assignment._id!) 
                           ? <span className="flex-1 text-center py-2 rounded-full text-xs font-bold uppercase tracking-widest bg-[#81f3e5]/10 text-[#81f3e5] border border-[#81f3e5]/20">✓ Submitted</span>
-                          : <button className="flex-1 bg-gradient-to-r from-primary to-primary-dim text-[#003840] font-bold py-2 rounded-full text-xs font-label uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_15px_rgba(129,236,255,0.2)]" onClick={() => window.location.href = '/submissions'}>SUBMIT</button>
+                          : <button className="flex-1 bg-gradient-to-r from-primary to-primary-dim text-[#003840] font-bold py-2 rounded-full text-xs font-label uppercase tracking-widest active:scale-95 transition-all shadow-[0_0_15px_rgba(129,236,255,0.2)]" onClick={() => navigate('/submissions')}>SUBMIT</button>
                         }
                       </div>
                     </div>
@@ -241,7 +244,7 @@ export const Assignments: React.FC = () => {
                             )}
                           </td>
                           <td className="px-6 py-5">
-                            <button className="text-primary hover:text-white transition-colors" onClick={() => window.location.href = '/submissions'}>
+                            <button className="text-primary hover:text-white transition-colors" onClick={() => navigate('/submissions')}>
                               <span className="material-symbols-outlined">chevron_right</span>
                             </button>
                           </td>

@@ -262,16 +262,28 @@ export const CourseAssignments: React.FC = () => {
                                 {selectedAssignment?.title}
                             </p>
 
+                            {selectedAssignment?.driveLink && (
+                                <div className="mb-6 p-4 bg-cyan-500/5 rounded-lg border border-cyan-500/10">
+                                    <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Assignment Resource</p>
+                                    <a href={selectedAssignment.driveLink} target="_blank" rel="noopener noreferrer" 
+                                       className="text-cyan-400 hover:text-cyan-300 text-sm flex items-center gap-1.5 font-medium transition-colors">
+                                        <span className="material-symbols-outlined text-sm">open_in_new</span>
+                                        <span>Open Assignment Link</span>
+                                        <span className="text-[10px]">↗</span>
+                                    </a>
+                                </div>
+                            )}
+
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div>
                                     <label className="block text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">
-                                        Submission Link
+                                        Remarks
                                     </label>
                                     <input
                                         type="url"
                                         required
                                         className="w-full bg-[#262626] border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
-                                        placeholder="https://google.drive.com/..."
+                                        placeholder=""
                                         value={submissionLink}
                                         onChange={(e) => setSubmissionLink(e.target.value)}
                                         disabled={submitting}

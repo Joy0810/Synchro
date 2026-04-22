@@ -117,7 +117,6 @@ export const Submissions: React.FC = () => {
         });
     };
 
-    const isLeader = user && group && (user.id === group.owner._id || user._id === group.owner._id);
 
     return (
         <div className="bg-background text-on-surface font-body min-h-screen selection:bg-primary-container/30 overflow-hidden">
@@ -214,7 +213,7 @@ export const Submissions: React.FC = () => {
                                                                 <span className="px-3 py-1 rounded-full bg-[#81f3e5]/10 text-[#81f3e5] text-[10px] font-bold tracking-widest uppercase border border-[#81f3e5]/20">
                                                                     Submitted
                                                                 </span>
-                                                            ) : isLeader ? (
+                                                            ) : (
                                                                 <button
                                                                     onClick={() => openSubmitModal(assignment)}
                                                                     disabled={!group}
@@ -222,10 +221,6 @@ export const Submissions: React.FC = () => {
                                                                 >
                                                                     Submit
                                                                 </button>
-                                                            ) : (
-                                                                <span className="px-3 py-1 rounded-full bg-zinc-800 text-zinc-500 text-[10px] font-bold tracking-widest uppercase border border-white/5">
-                                                                    Pending
-                                                                </span>
                                                             )}
                                                         </td>
                                                     </tr>
@@ -334,11 +329,11 @@ export const Submissions: React.FC = () => {
                             </div>
                         )}
                         <div className="mb-6">
-                            <label className="block text-sm font-label text-zinc-400 mb-2">Step 2: Paste your submission link *</label>
+                            <label className="block text-sm font-label text-zinc-400 mb-2">Remarks</label>
                             <input
                                 type="url"
                                 className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors"
-                                placeholder="https://..."
+                                placeholder=""
                                 value={submissionLink}
                                 onChange={(e) => setSubmissionLink(e.target.value)}
                                 disabled={submitting}
@@ -353,15 +348,13 @@ export const Submissions: React.FC = () => {
                             >
                                 Cancel
                             </button>
-                            {isLeader && (
-                                <button
-                                    onClick={handleSubmit}
-                                    disabled={submitting || !submissionLink.trim()}
-                                    className="px-6 py-2 bg-[#81ecff] hover:bg-[#00d4ec] text-[#003840] rounded-full font-bold text-sm transition-colors disabled:opacity-50"
-                                >
-                                    {submitting ? 'Submitting...' : 'Mark as Submitted'}
-                                </button>
-                            )}
+                            <button
+                                onClick={handleSubmit}
+                                disabled={submitting || !submissionLink.trim()}
+                                className="px-6 py-2 bg-[#81ecff] hover:bg-[#00d4ec] text-[#003840] rounded-full font-bold text-sm transition-colors disabled:opacity-50"
+                            >
+                                {submitting ? 'Submitting...' : 'Mark as Submitted'}
+                            </button>
                         </div>
                     </div>
                 </div>
