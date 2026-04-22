@@ -10,11 +10,36 @@ export const Register: React.FC = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'student' | 'admin'>('student');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    const newErrors: Record<string, string> = {};
+
+    if (!name.trim()) {
+      newErrors.name = 'Full name is required';
+    }
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     setLoading(true);
 
     try {
@@ -67,38 +92,38 @@ export const Register: React.FC = () => {
                 <div className="group">
                   <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors font-bold">Full Name</label>
                   <input
-                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all"
+                    className={`w-full bg-[rgba(255,255,255,0.03)] border ${errors.name ? 'border-red-500/50' : 'border-[rgba(255,255,255,0.08)]'} focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all`}
                     placeholder="Enter your name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    required
                     disabled={loading}
                   />
+                  {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
                 </div>
                 <div className="group">
                   <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors font-bold">Email Address</label>
                   <input
-                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all"
+                    className={`w-full bg-[rgba(255,255,255,0.03)] border ${errors.email ? 'border-red-500/50' : 'border-[rgba(255,255,255,0.08)]'} focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all`}
                     placeholder="name@university.edu"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    required
                     disabled={loading}
                   />
+                  {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                 </div>
                 <div className="group">
                   <label className="block font-label text-[10px] uppercase tracking-[0.2em] text-on-surface-variant mb-2 group-focus-within:text-primary transition-colors font-bold">Password</label>
                   <input
-                    className="w-full bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.08)] focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all"
+                    className={`w-full bg-[rgba(255,255,255,0.03)] border ${errors.password ? 'border-red-500/50' : 'border-[rgba(255,255,255,0.08)]'} focus:border-primary focus:bg-[rgba(255,255,255,0.05)] focus:ring-1 focus:ring-primary px-5 py-4 text-white font-body rounded-lg outline-none transition-all`}
                     placeholder="••••••••"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    required
                     disabled={loading}
                   />
+                  {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
                 </div>
               </div>
 
