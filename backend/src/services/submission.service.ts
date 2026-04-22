@@ -89,4 +89,21 @@ export const getAllSubmissionsAdmin = async () => {
     .populate('assignment', 'title dueDate course')
     .populate('group', 'name')
     .populate('confirmedBy', 'name email');
+};  
+export const getUserSubmissions = async (userId: string) => {
+  const submissions = await SubmissionModel.find({ confirmedBy: userId })
+    .populate('assignment', 'title dueDate driveLink course')
+    .populate('confirmedBy', 'name email');
+
+  const now = new Date();
+  return submissions.map(sub => {
+    const assignment = sub.assignment as any;
+    const effectiveStatus =
+      sub.submissionStatus === 'confirmed'
+        ? 'confirmed'
+        : now > new Date(assignment.dueDate)
+        ? 'overdue'
+        : 'pending';
+    return { ...sub.toObject(), submissionStatus: effectiveStatus };
+  });
 };

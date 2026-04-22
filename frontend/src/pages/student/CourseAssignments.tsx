@@ -54,10 +54,9 @@ export const CourseAssignments: React.FC = () => {
 
             const groupsData = groupsRes.data.data as Group[];
             if (groupsData.length > 0) {
-                const group = groupsData[0];
-                setStudentGroup(group);
-                await refreshSubmissions(group._id);
+                setStudentGroup(groupsData[0]);
             }
+            await refreshSubmissions();
 
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to load assignments');
@@ -66,9 +65,9 @@ export const CourseAssignments: React.FC = () => {
         }
     };
 
-    const refreshSubmissions = async (groupId: string) => {
+    const refreshSubmissions = async () => {
         try {
-            const submissionsRes = await axiosInstance.get(`/api/submissions/group/${groupId}`);
+            const submissionsRes = await axiosInstance.get('/api/submissions/my');
             setSubmissions(submissionsRes.data.data);
         } catch (err: any) {
             console.error('Error refreshing submissions:', err);
@@ -103,9 +102,7 @@ export const CourseAssignments: React.FC = () => {
                 submissionLink: submissionLink.trim()
             });
 
-            if (studentGroup) {
-                await refreshSubmissions(studentGroup._id);
-            }
+            await fetchCourseAndAssignments();
             setIsModalOpen(false);
         } catch (err: any) {
             setSubmitError(err.response?.data?.error || 'Failed to submit assignment');

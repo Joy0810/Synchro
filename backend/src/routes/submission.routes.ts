@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { verifyToken, requireRole } from '../middleware/auth.middleware';
-import { submitAssignment, getGroupSubmissions, getAllSubmissionsAdmin } from '../services/submission.service';
+import { submitAssignment, getGroupSubmissions, getAllSubmissionsAdmin, getUserSubmissions } from '../services/submission.service';
 import { AuthRequest } from '../types';
 
 const router = Router();
@@ -24,6 +24,13 @@ router.post('/', async (req: AuthRequest, res, next) => {
       submissionLink ?? ''
     );
     res.status(201).json({ success: true, data: submission });
+  } catch (e) { next(e); }
+});
+
+router.get('/my', async (req: AuthRequest, res, next) => {
+  try {
+    const submissions = await getUserSubmissions(req.user!.userId);
+    res.json({ success: true, data: submissions });
   } catch (e) { next(e); }
 });
 

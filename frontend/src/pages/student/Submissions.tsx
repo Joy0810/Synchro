@@ -45,11 +45,11 @@ export const Submissions: React.FC = () => {
             setAssignments(fetchedAssignments);
             setCourses(fetchedCourses);
 
+            const submissionsResponse = await axiosInstance.get('/api/submissions/my');
+            setSubmissions(submissionsResponse.data.data);
+
             if (fetchedGroups.length > 0) {
-                const firstGroup = fetchedGroups[0];
-                setGroup(firstGroup);
-                const submissionsResponse = await axiosInstance.get(`/api/submissions/group/${firstGroup._id}`);
-                setSubmissions(submissionsResponse.data.data);
+                setGroup(fetchedGroups[0]);
             }
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to fetch data');
