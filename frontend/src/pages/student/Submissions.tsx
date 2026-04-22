@@ -17,6 +17,12 @@ export const Submissions: React.FC = () => {
     const [submissionLink, setSubmissionLink] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     useEffect(() => {
         fetchGroupsAndSubmissions();
@@ -68,8 +74,11 @@ export const Submissions: React.FC = () => {
             setSubmissionLink('');
             setSelectedAssignment(null);
             await fetchGroupsAndSubmissions();
+            showToast('Assignment submitted successfully!');
         } catch (err: any) {
-            setSubmitError(err.response?.data?.error || 'Failed to submit');
+            const msg = err.response?.data?.error || 'Failed to submit';
+            setSubmitError(msg);
+            showToast(msg, 'error');
         } finally {
             setSubmitting(false);
         }
@@ -121,6 +130,20 @@ export const Submissions: React.FC = () => {
     return (
         <div className="bg-background text-on-surface font-body min-h-screen selection:bg-primary-container/30 overflow-hidden">
             <Navbar />
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[300] px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl backdrop-blur-md border animate-in fade-in zoom-in duration-300 ${
+                    toast.type === 'success' 
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                }`}>
+                    <span className="material-symbols-outlined text-xl">
+                        {toast.type === 'success' ? 'check_circle' : 'error'}
+                    </span>
+                    <span className="text-sm font-bold tracking-wide uppercase font-label">{toast.message}</span>
+                </div>
+            )}
 
             <main className="ml-64 pt-32 px-12 pb-12 min-h-screen flex flex-col">
                 {/* Page Header */}
@@ -331,7 +354,7 @@ export const Submissions: React.FC = () => {
                         <div className="mb-6">
                             <label className="block text-sm font-label text-zinc-400 mb-2">Remarks</label>
                             <input
-                                type="url"
+                                type="text"
                                 className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors"
                                 placeholder=""
                                 value={submissionLink}

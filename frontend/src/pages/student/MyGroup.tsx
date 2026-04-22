@@ -17,6 +17,12 @@ export const MyGroup: React.FC = () => {
     const [actionLoading, setActionLoading] = useState(false);
     const [actionError, setActionError] = useState<string | null>(null);
     const [submissions, setSubmissions] = useState<any[]>([]);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
 
     const selectedGroup = groups.length > 0 ? groups[0] : null;
 
@@ -59,8 +65,11 @@ export const MyGroup: React.FC = () => {
             setNewGroupName('');
             setIsCreateModalOpen(false);
             await fetchGroups();
+            showToast('Group created successfully!');
         } catch (err: any) {
-            setActionError(err.response?.data?.error || 'Failed to create group');
+            const msg = err.response?.data?.error || 'Failed to create group';
+            setActionError(msg);
+            showToast(msg, 'error');
             console.error('Error creating group:', err);
         } finally {
             setActionLoading(false);
@@ -79,8 +88,11 @@ export const MyGroup: React.FC = () => {
             setNewMemberEmail('');
             setIsAddMemberModalOpen(false);
             await fetchGroups();
+            showToast('Member added successfully!');
         } catch (err: any) {
-            setActionError(err.response?.data?.error || 'Failed to add member');
+            const msg = err.response?.data?.error || 'Failed to add member';
+            setActionError(msg);
+            showToast(msg, 'error');
             console.error('Error adding member:', err);
         } finally {
             setActionLoading(false);
@@ -97,8 +109,11 @@ export const MyGroup: React.FC = () => {
             setActionError(null);
             await axiosInstance.delete(`/api/groups/${selectedGroup._id}/members/${memberId}`);
             await fetchGroups();
+            showToast('Member removed successfully!');
         } catch (err: any) {
-            setActionError(err.response?.data?.error || 'Failed to remove member');
+            const msg = err.response?.data?.error || 'Failed to remove member';
+            setActionError(msg);
+            showToast(msg, 'error');
             console.error('Error removing member:', err);
         } finally {
             setActionLoading(false);
@@ -115,8 +130,11 @@ export const MyGroup: React.FC = () => {
             setActionError(null);
             await axiosInstance.delete(`/api/groups/${selectedGroup._id}`);
             await fetchGroups();
+            showToast('Group deleted successfully!');
         } catch (err: any) {
-            setActionError(err.response?.data?.error || 'Failed to delete group');
+            const msg = err.response?.data?.error || 'Failed to delete group';
+            setActionError(msg);
+            showToast(msg, 'error');
             console.error('Error deleting group:', err);
         } finally {
             setActionLoading(false);
@@ -133,6 +151,20 @@ export const MyGroup: React.FC = () => {
     return (
         <div className="bg-background text-on-surface font-body selection:bg-primary/30 min-h-screen">
             <Navbar />
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[300] px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl backdrop-blur-md border animate-in fade-in zoom-in duration-300 ${
+                    toast.type === 'success' 
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                }`}>
+                    <span className="material-symbols-outlined text-xl">
+                        {toast.type === 'success' ? 'check_circle' : 'error'}
+                    </span>
+                    <span className="text-sm font-bold tracking-wide uppercase font-label">{toast.message}</span>
+                </div>
+            )}
 
             <main className="ml-64 pt-24 pb-12 px-10 min-h-screen">
                 {/* Header Section */}
