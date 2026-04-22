@@ -20,6 +20,13 @@ export const AdminAssignments: React.FC = () => {
     const [groups, setGroups] = useState<Group[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [submissions, setSubmissions] = useState<any[]>([]);
+    const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+    const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => setToast(null), 3000);
+    };
+
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [editingAssignment, setEditingAssignment] = useState<Assignment | null>(null);
@@ -76,9 +83,12 @@ export const AdminAssignments: React.FC = () => {
             await fetchData();
             setIsCreateModalOpen(false);
             resetForm();
+            showToast('Assignment created successfully!');
         } catch (err: any) {
             console.log('create error:', err.response?.data);
-            setError(err.response?.data?.error || 'Failed to create assignment');
+            const msg = err.response?.data?.error || 'Failed to create assignment';
+            setError(msg);
+            showToast(msg, 'error');
         } finally {
             setSubmitting(false);
         }
@@ -100,10 +110,14 @@ export const AdminAssignments: React.FC = () => {
             await fetchData();
             setIsEditModalOpen(false);
             setEditingAssignment(null);
+            setEditingAssignment(null);
             resetForm();
+            showToast('Assignment updated successfully!');
         } catch (err: any) {
             console.log('edit error:', err.response?.data);
-            setError(err.response?.data?.error || 'Failed to update assignment');
+            const msg = err.response?.data?.error || 'Failed to update assignment';
+            setError(msg);
+            showToast(msg, 'error');
         } finally {
             setSubmitting(false);
         }
@@ -116,8 +130,11 @@ export const AdminAssignments: React.FC = () => {
             setError(null);
             await axiosInstance.delete(`/api/assignments/${id}`);
             await fetchData();
+            showToast('Assignment deleted successfully!');
         } catch (err: any) {
-            setError(err.response?.data?.error || 'Failed to delete assignment');
+            const msg = err.response?.data?.error || 'Failed to delete assignment';
+            setError(msg);
+            showToast(msg, 'error');
         }
     };
 
@@ -157,6 +174,20 @@ export const AdminAssignments: React.FC = () => {
     return (
         <div className="bg-[#0e0e0e] text-white font-body min-h-screen selection:bg-[#81ecff] selection:text-[#003840] overflow-hidden">
             <AdminNavbar />
+
+            {/* Toast Notification */}
+            {toast && (
+                <div className={`fixed top-8 left-1/2 -translate-x-1/2 z-[300] px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl backdrop-blur-md border animate-in fade-in zoom-in duration-300 ${
+                    toast.type === 'success' 
+                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                    : 'bg-red-500/10 text-red-400 border-red-500/20'
+                }`}>
+                    <span className="material-symbols-outlined text-xl">
+                        {toast.type === 'success' ? 'check_circle' : 'error'}
+                    </span>
+                    <span className="text-sm font-bold tracking-wide uppercase font-label">{toast.message}</span>
+                </div>
+            )}
 
             <main className="ml-64 pt-24 px-12 pb-12 min-h-screen flex flex-col">
                 <header className="mb-12 relative flex items-center justify-center min-h-[48px]">

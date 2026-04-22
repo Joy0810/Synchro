@@ -54,15 +54,22 @@ export const CourseAssignments: React.FC = () => {
             if (groupsData.length > 0) {
                 const group = groupsData[0];
                 setStudentGroup(group);
-                
-                const submissionsRes = await axiosInstance.get(`/api/submissions/group/${group._id}`);
-                setSubmissions(submissionsRes.data.data);
+                await refreshSubmissions(group._id);
             }
 
         } catch (err: any) {
             setError(err.response?.data?.error || 'Failed to load assignments');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const refreshSubmissions = async (groupId: string) => {
+        try {
+            const submissionsRes = await axiosInstance.get(`/api/submissions/group/${groupId}`);
+            setSubmissions(submissionsRes.data.data);
+        } catch (err: any) {
+            console.error('Error refreshing submissions:', err);
         }
     };
 
@@ -85,14 +92,13 @@ export const CourseAssignments: React.FC = () => {
             setSubmitting(true);
             setSubmitError('');
             
-            const response = await axiosInstance.post('/api/submissions', {
+            await axiosInstance.post('/api/submissions', {
                 assignmentId: selectedAssignment._id,
                 groupId: studentGroup._id,
                 submissionLink: submissionLink.trim()
             });
 
-            const newSubmission = response.data.data;
-            setSubmissions(prev => [...prev, newSubmission]);
+            await refreshSubmissions(studentGroup._id);
             setIsModalOpen(false);
         } catch (err: any) {
             setSubmitError(err.response?.data?.error || 'Failed to submit assignment');
@@ -280,7 +286,7 @@ export const CourseAssignments: React.FC = () => {
                                         Remarks
                                     </label>
                                     <input
-                                        type="url"
+                                        type="text"
                                         required
                                         className="w-full bg-[#262626] border border-white/10 rounded-lg px-4 py-3 text-white placeholder:text-gray-600 focus:outline-none focus:border-cyan-500/50 transition-colors"
                                         placeholder=""
