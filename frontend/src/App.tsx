@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { StudentDashboard } from './pages/StudentDashboard';
+import { StudentDashboard } from './pages/student/StudentDashboard';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 import { Assignments } from './pages/student/Assignments';
@@ -60,7 +60,7 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
       <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
-      
+
       {/* Student Routes */}
       <Route path="/dashboard" element={<ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>} />
       <Route path="/assignments" element={<ProtectedRoute allowedRole="student"><Assignments /></ProtectedRoute>} />
