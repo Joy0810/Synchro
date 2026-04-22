@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from '../../components/Navbar';
 import { useAuth } from '../../contexts/AuthContext';
 import axiosInstance from '../../api/axios';
-import type { Submission, Assignment, Group } from '../../types';
+import type { Submission, Assignment, Group, Course } from '../../types';
 
 export const Submissions: React.FC = () => {
     const { user } = useAuth();
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [assignments, setAssignments] = useState<Assignment[]>([]);
+    const [courses, setCourses] = useState<Course[]>([]);
     const [group, setGroup] = useState<Group | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -26,14 +27,17 @@ export const Submissions: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            const [groupsResponse, assignmentsResponse] = await Promise.all([
+            const [groupsResponse, assignmentsResponse, coursesResponse] = await Promise.all([
                 axiosInstance.get('/api/groups'),
-                axiosInstance.get('/api/assignments')
+                axiosInstance.get('/api/assignments'),
+                axiosInstance.get('/api/courses')
             ]);
 
             const fetchedGroups = groupsResponse.data.data;
             const fetchedAssignments = assignmentsResponse.data.data;
+            const fetchedCourses = coursesResponse.data.data;
             setAssignments(fetchedAssignments);
+            setCourses(fetchedCourses);
 
             if (fetchedGroups.length > 0) {
                 const firstGroup = fetchedGroups[0];
@@ -85,6 +89,14 @@ export const Submissions: React.FC = () => {
                 : s.assignmentId;
             return id === assignmentId;
         });
+    };
+
+    const getCourseName = (courseId: any) => {
+        if (!courseId) return null;
+        const id = typeof courseId === 'string' ? courseId : courseId?._id;
+        if (!id) return null;
+        const course = courses.find(c => c._id === id);
+        return course?.title || null;
     };
 
     const formatDate = (dateString: string) => {
@@ -173,6 +185,7 @@ export const Submissions: React.FC = () => {
                                         <thead className="bg-[#201f1f]/30 border-b border-white/5">
                                             <tr>
                                                 <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Assignment</th>
+                                                <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Course</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Due Date</th>
                                                 <th className="px-8 py-4 text-xs font-bold text-zinc-500 uppercase tracking-widest text-right">Action</th>
                                             </tr>
@@ -185,6 +198,15 @@ export const Submissions: React.FC = () => {
                                                         <td className="px-8 py-5">
                                                             <p className="text-white font-medium">{assignment.title}</p>
                                                             <p className="text-xs text-zinc-500">{assignment.description || 'No description'}</p>
+                                                        </td>
+                                                        <td className="px-8 py-5 text-sm text-zinc-400">
+                                                            {getCourseName((assignment as any).course) ? (
+                                                                <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider">
+                                                                    {getCourseName((assignment as any).course)}
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-zinc-600">—</span>
+                                                            )}
                                                         </td>
                                                         <td className="px-8 py-5 text-sm text-zinc-400">{formatDate(assignment.dueDate)}</td>
                                                         <td className="px-8 py-5 text-right">
@@ -243,9 +265,13 @@ export const Submissions: React.FC = () => {
                                                         <p className="text-xs text-zinc-500">{(submission.assignment as any)?.description || ''}</p>
                                                     </td>
                                                     <td className="px-8 py-6 text-sm text-zinc-400">
-                                                        {(submission.assignment as any)?.course?.title
-                                                            ? <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider">{(submission.assignment as any).course.title}</span>
-                                                            : <span className="text-zinc-600">—</span>}
+                                                        {getCourseName((submission.assignment as any)?.course) ? (
+                                                            <span className="px-2 py-1 rounded bg-[#a78bfa]/10 text-[#a78bfa] text-[10px] font-bold border border-[#a78bfa]/20 uppercase tracking-wider">
+                                                                {getCourseName((submission.assignment as any).course)}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="text-zinc-600">—</span>
+                                                        )}
                                                     </td>
                                                     <td className="px-8 py-6 text-zinc-400 text-sm">
                                                         {submission.confirmedAt ? (

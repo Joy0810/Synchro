@@ -38,7 +38,15 @@ export const AssignmentCard: React.FC<AssignmentCardProps> = ({ title, status, t
           <span className={`px-2 py-1 rounded ${badgeBgClass} ${badgeTextClass} text-[10px] font-bold font-label tracking-widest uppercase`}>
             {status}
           </span>
-          <span className="text-on-surface-variant text-xs font-label">{timeLeft}</span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-bold border transition-colors ${
+            status === 'URGENT' 
+              ? 'bg-red-500/20 text-red-400 border-red-500/30' 
+              : status === 'DUE SOON' 
+                ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' 
+                : 'bg-green-500/20 text-green-400 border-green-500/30'
+          }`}>
+            {timeLeft}
+          </span>
         </div>
         <h4 className="text-xl font-bold font-headline leading-tight group-hover:text-primary transition-colors">
           {title}
