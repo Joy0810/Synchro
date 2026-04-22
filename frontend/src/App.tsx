@@ -1,10 +1,12 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { StudentDashboard } from './pages/StudentDashboard';
+import { StudentDashboard } from './pages/student/StudentDashboard';
 import { Login } from './pages/auth/Login';
 import { Register } from './pages/auth/Register';
 import { Assignments } from './pages/student/Assignments';
 import { MyGroup } from './pages/student/MyGroup';
+import { CourseAssignments } from './pages/student/CourseAssignments';
+import { Courses } from './pages/student/Courses';
 import { Submissions } from './pages/student/Submissions';
 
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -60,14 +62,14 @@ function AppRoutes() {
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<AuthRedirect><Login /></AuthRedirect>} />
       <Route path="/register" element={<AuthRedirect><Register /></AuthRedirect>} />
-      
+
       {/* Student Routes */}
       <Route path="/dashboard" element={<ProtectedRoute allowedRole="student"><StudentDashboard /></ProtectedRoute>} />
       <Route path="/assignments" element={<ProtectedRoute allowedRole="student"><Assignments /></ProtectedRoute>} />
       <Route path="/my-group" element={<ProtectedRoute allowedRole="student"><MyGroup /></ProtectedRoute>} />
       <Route path="/submissions" element={<ProtectedRoute allowedRole="student"><Submissions /></ProtectedRoute>} />
-      <Route path="/courses" element={<ProtectedRoute allowedRole="student"><div>Courses Coming Soon</div></ProtectedRoute>} />
-      <Route path="/courses/:id" element={<ProtectedRoute allowedRole="student"><div>Courses Coming Soon</div></ProtectedRoute>} />
+      <Route path="/courses/:id" element={<ProtectedRoute allowedRole="student"><CourseAssignments /></ProtectedRoute>} />
+      <Route path="/courses" element={<ProtectedRoute allowedRole="student"><Courses /></ProtectedRoute>} />
 
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />

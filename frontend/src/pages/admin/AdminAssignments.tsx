@@ -128,7 +128,7 @@ export const AdminAssignments: React.FC = () => {
             description: assignment.description || '',
             dueDate: assignment.dueDate,
             driveLink: assignment.driveLink || '',
-            courseId: (assignment as any).course?._id || '',
+            courseId: typeof (assignment as any).course === 'string' ? (assignment as any).course : (assignment as any).course?._id || '',
             assignedTo: assignment.assignedTo,
             groupIds: []
         });
@@ -343,6 +343,13 @@ export const AdminAssignments: React.FC = () => {
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Drive Link</label>
                                 <input type="text" value={formData.driveLink} onChange={(e) => setFormData({ ...formData, driveLink: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors" placeholder="https://..." />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-label text-[#adaaaa] mb-1">Course (Optional)</label>
+                                <select value={formData.courseId} onChange={(e) => setFormData({ ...formData, courseId: e.target.value })} className="w-full bg-[#262626] border border-[#484847]/30 text-white focus:outline-none focus:border-[#81ecff] px-4 py-2 rounded-lg transition-colors appearance-none font-body">
+                                    <option value="">No specific course</option>
+                                    {courses.map(c => <option key={c._id} value={c._id}>{c.title}</option>)}
+                                </select>
                             </div>
                             <div>
                                 <label className="block text-sm font-label text-[#adaaaa] mb-1">Assigned To *</label>

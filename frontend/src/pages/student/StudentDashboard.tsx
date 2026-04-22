@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Navbar } from '../components/Navbar';
-import { AssignmentCard } from '../components/AssignmentCard';
-import { CourseCard } from '../components/ui/CourseCard';
-import { EmptyState } from '../components/EmptyState';
-import { useAuth } from '../contexts/AuthContext';
-import axiosInstance from '../api/axios';
-import { type Assignment, type Submission, type Course } from '../types';
+import { Navbar } from '../../components/Navbar';
+import { AssignmentCard } from '../../components/AssignmentCard';
+import { CourseCard } from '../../components/ui/CourseCard';
+import { EmptyState } from '../../components/EmptyState';
+import { useAuth } from '../../contexts/AuthContext';
+import axiosInstance from '../../api/axios';
+import { type Assignment, type Submission, type Course } from '../../types';
 
 export const StudentDashboard: React.FC = () => {
     const { user } = useAuth();
@@ -143,7 +143,7 @@ export const StudentDashboard: React.FC = () => {
                                 <h3 className="text-lg font-bold font-headline tracking-wide uppercase text-primary/80">Your Courses</h3>
                                 <div className="h-1 w-12 bg-primary/30 mt-1 rounded-full"></div>
                             </div>
-                            <button 
+                            <button
                                 onClick={() => setIsEnrollModalOpen(true)}
                                 className="px-6 py-2.5 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/20 rounded-full font-bold text-sm transition-all flex items-center gap-2"
                             >
@@ -165,9 +165,9 @@ export const StudentDashboard: React.FC = () => {
                                 {courses.map((course) => {
                                     const courseAssignments = assignments.filter(a => (a as any).course?._id === course._id || (a as any).course === course._id);
                                     const courseSubmissions = submissions.filter(s => (s.assignment as any)?.course?._id === course._id || (s.assignment as any)?.course === course._id);
-                                    
+
                                     return (
-                                        <CourseCard 
+                                        <CourseCard
                                             key={course._id}
                                             course={course}
                                             submittedCount={courseSubmissions.length}
