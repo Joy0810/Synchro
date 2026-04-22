@@ -8,11 +8,32 @@ export const Login: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    const newErrors: Record<string, string> = {};
+
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = 'Please enter a valid email';
+    }
+
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
     setLoading(true);
 
     try {
@@ -66,15 +87,15 @@ export const Login: React.FC = () => {
                   <span className="material-symbols-outlined text-sm">mail</span>
                 </div>
                 <input 
-                  className="w-full pl-12 pr-4 py-4 text-white font-body rounded-lg bg-[#121212] border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
-                  id="email" 
-                  placeholder="name@university.edu" 
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
+                   className={`w-full pl-12 pr-4 py-4 text-white font-body rounded-lg bg-[#121212] border ${errors.email ? 'border-red-500/50' : 'border-outline-variant'} focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`} 
+                   id="email" 
+                   placeholder="name@university.edu" 
+                   type="email"
+                   value={email}
+                   onChange={(e) => setEmail(e.target.value)}
+                   disabled={loading}
                 />
+                {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
               </div>
             </div>
 
@@ -89,15 +110,15 @@ export const Login: React.FC = () => {
                   <span className="material-symbols-outlined text-sm">lock</span>
                 </div>
                 <input 
-                  className="w-full pl-12 pr-4 py-4 text-white font-body rounded-lg bg-[#121212] border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all" 
-                  id="password" 
-                  placeholder="••••••••" 
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
+                   className={`w-full pl-12 pr-4 py-4 text-white font-body rounded-lg bg-[#121212] border ${errors.password ? 'border-red-500/50' : 'border-outline-variant'} focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all`} 
+                   id="password" 
+                   placeholder="••••••••" 
+                   type="password"
+                   value={password}
+                   onChange={(e) => setPassword(e.target.value)}
+                   disabled={loading}
                 />
+                {errors.password && <p className="text-red-400 text-xs mt-1">{errors.password}</p>}
               </div>
             </div>
 
