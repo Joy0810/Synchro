@@ -353,3 +353,24 @@ Or use the live site: https://synchro-kappa.vercel.app
 <div align="center">
   <sub>Built with focus by Joy — Joineazy Full Stack Internship, April 2026</sub>
 </div>
+
+
+## Screenshots
+
+### Login
+![Login](screenshots/login.png)
+
+### Student Dashboard
+![Student Dashboard](screenshots/studentDashboard.png)
+
+### Student Courses
+![Student Courses](screenshots/studentCourses.png)
+
+### Student Submissions
+![Student Submissions](screenshots/studentSubmissions.png)
+
+### Admin Dashboard
+![Admin Dashboard](screenshots/adminDashboard.png)
+
+### Admin Courses
+![Admin Courses](screenshots/adminCourses.png)

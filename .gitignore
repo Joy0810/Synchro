@@ -24,4 +24,4 @@ pgdata/
 *.log
 npm-debug.log*
 
-*.html
+*.htmlMASTER_CONTEXT*.md
